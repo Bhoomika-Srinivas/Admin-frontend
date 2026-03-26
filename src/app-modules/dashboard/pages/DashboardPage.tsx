@@ -8,7 +8,6 @@ import {
   mockStats, recentActivities, mockEvents, mockNews,
   mockFaculty, mockDepartments, mockAlumni, mockPlacements
 } from '@/data/mockData'
-import { format } from 'date-fns'
 import { useAuth } from '@/auth/AuthContext'
 import { isSuperAdmin } from '@/shared/utils/permissions'
 

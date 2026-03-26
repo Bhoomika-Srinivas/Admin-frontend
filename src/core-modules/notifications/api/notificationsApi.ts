@@ -8,7 +8,7 @@ export interface AppNotification {
   timestamp: string
 }
 
-let notifications: AppNotification[] = [
+const notifications: AppNotification[] = [
   {
     id: '1',
     userId: '2',

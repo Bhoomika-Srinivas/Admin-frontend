@@ -1,5 +1,4 @@
 import type { User, Department, News, Event, Faculty, Placement, Alumni, DashboardStats, Publication, Education, WorkExperience, ResearchProject, CourseTeaching, Honor } from '@/shared/types/models'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 export const mockStats: DashboardStats = {
   totalStudents: 3840,

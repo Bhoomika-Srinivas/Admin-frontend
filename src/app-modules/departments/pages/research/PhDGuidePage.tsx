@@ -175,7 +175,7 @@ export default function PhDGuidePage() {
   const { data: scholars, reload: reloadScholars } = useDepartmentSectionAsync(scholarLoader)
 
   // Re-fetch scholars whenever the selected guide changes
-  useEffect(() => { if (guideFacultyId) reloadScholars() }, [guideFacultyId]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (guideFacultyId) reloadScholars() }, [guideFacultyId])
 
   const [tab, setTab]           = useState<StatusTab>('all')
   const [modalOpen, setModalOpen] = useState(false)

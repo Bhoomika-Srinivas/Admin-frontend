@@ -3,8 +3,10 @@ import { z } from 'zod'
 
 /** Recursively unwrap ZodEffects (.refine / .superRefine) to reach the inner ZodObject shape. */
 function getShape(schema: z.ZodTypeAny): Record<string, z.ZodTypeAny> | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const maybeShape = (schema as any).shape
   if (maybeShape && typeof maybeShape === 'object') return maybeShape as Record<string, z.ZodTypeAny>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const inner = (schema as any)._def?.schema
   if (inner) return getShape(inner)
   return null

@@ -14,7 +14,7 @@ export const FacultySchema = z.object({
   qualification:  z.string().min(2, 'Qualification is required'),
   experience:     z.number({ error: 'Experience must be a number' }).min(0, 'Experience cannot be negative').max(60, 'Experience seems too high'),
   email:          z.string().email('Must be a valid email address'),
-  phone:          z.string().regex(/^\+?[0-9\s\-]{7,15}$/, 'Enter a valid phone number').optional().or(z.literal('')),
+  phone:          z.string().regex(/^\+?[0-9\s-]{7,15}$/, 'Enter a valid phone number').optional().or(z.literal('')),
   specialization: z.string().min(2, 'Specialization is required'),
   officeLocation: z.string().optional(),
 })

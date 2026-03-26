@@ -2,7 +2,7 @@ import type { Placement, User } from '@/shared/types/models'
 import { mockPlacements } from '@/data/mockData'
 import { auditService } from '@/core-modules/audit/api/auditApi'
 
-let placements: Placement[] = [...mockPlacements]
+const placements: Placement[] = [...mockPlacements]
 let nextId = 100
 
 export const placementService = {

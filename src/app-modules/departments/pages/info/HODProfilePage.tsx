@@ -25,7 +25,6 @@ function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
       editorRef.current.innerHTML = value
       lastHtmlRef.current = value
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function exec(cmd: string, arg?: string) {

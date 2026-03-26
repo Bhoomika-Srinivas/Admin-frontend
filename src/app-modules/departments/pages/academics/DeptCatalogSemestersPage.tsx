@@ -2,7 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { adminProgramService, adminDeptService, adminCourseService } from '@/app-modules/departments/api/adminCoursesApi'
 import { useDeptContext } from '@/app-modules/departments/context/DepartmentContext'
-import clsx from 'clsx'
 
 function ordinal(n: number) {
   const s = ['th', 'st', 'nd', 'rd']
