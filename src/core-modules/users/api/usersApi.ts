@@ -2,7 +2,7 @@ import type { User } from '@/shared/types/models'
 import { mockUsers } from '@/data/mockData'
 import { auditService } from '@/core-modules/audit/api/auditApi'
 
-let users: User[] = [...mockUsers]
+const users: User[] = [...mockUsers]
 let nextId = 100
 
 export const userService = {

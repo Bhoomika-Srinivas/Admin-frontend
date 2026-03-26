@@ -52,7 +52,7 @@ export default function DeptTimetableViewPage() {
   const sem       = Number(semester)
   const batchName = decodeURIComponent(batch!)
   const navigate  = useNavigate()
-  const { user }  = useAuth()
+  const { user: _user } = useAuth()
   const toast     = useToast()
   const dept      = useDeptContext()
   const program   = adminProgramService.getById(programId!)

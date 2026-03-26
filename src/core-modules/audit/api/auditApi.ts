@@ -8,7 +8,7 @@ export interface AuditLog {
   timestamp: string
 }
 
-let logs: AuditLog[] = [
+const logs: AuditLog[] = [
   {
     id: '1',
     userId: '1',

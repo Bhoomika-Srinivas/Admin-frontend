@@ -2,7 +2,7 @@ import type { News, User } from '@/shared/types/models'
 import { mockNews } from '@/data/mockData'
 import { auditService } from '@/core-modules/audit/api/auditApi'
 
-let newsItems: News[] = mockNews.map(n => ({ ...n }))
+const newsItems: News[] = mockNews.map(n => ({ ...n }))
 let nextId = 100
 
 function sorted(list: News[]): News[] {

@@ -95,7 +95,7 @@ export default function DeptLMMaterialsPage() {
   const { deptId, programId, semester, batch, courseId } = useParams<{
     deptId: string; programId: string; semester: string; batch: string; courseId: string
   }>()
-  const sem      = Number(semester)
+  const _sem     = Number(semester)
   const batchName = decodeURIComponent(batch!)
   const navigate = useNavigate()
   const toast    = useToast()

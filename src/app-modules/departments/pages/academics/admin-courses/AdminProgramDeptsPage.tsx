@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Plus, Edit2, Trash2, ChevronRight } from 'lucide-react'
 import { adminProgramService, adminDeptService } from '@/app-modules/departments/api/adminCoursesApi'

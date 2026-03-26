@@ -54,7 +54,7 @@ const initialCommittees: Committee[] = [
   },
 ]
 
-let committees: Committee[] = [...initialCommittees]
+const committees: Committee[] = [...initialCommittees]
 let nextId = 100
 
 export const committeeService = {

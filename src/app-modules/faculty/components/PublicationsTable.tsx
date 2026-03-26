@@ -23,7 +23,7 @@ const emptyPub: Omit<Publication, 'id'> = {
 export default function PublicationsTable({ publications, canEdit, onChange }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<Omit<Publication, 'id'>>(emptyPub)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [_deleteId, _setDeleteId] = useState<string | null>(null)
 
   function handleAdd() {
     const newPub: Publication = { ...form, id: `p${Date.now()}` }
