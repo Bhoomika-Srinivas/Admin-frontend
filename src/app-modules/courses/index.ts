@@ -1,0 +1,5 @@
+export * from './pages/CoursesProgramsPage'
+export * from './pages/DepartmentsPage'
+export * from './pages/SemestersPage'
+export * from './pages/BatchSelectionPage'
+export * from './pages/CoursesListPage'

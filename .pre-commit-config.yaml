@@ -1,0 +1,32 @@
+repos:
+  # General hygiene checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-json
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+
+  # Block secrets / API keys from being committed
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json
+
+  # ESLint — runs your existing lint script
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        language: node
+        entry: npx eslint --ext .ts,.tsx --max-warnings 0
+        types: [file]
+        files: \.(ts|tsx)$
+        pass_filenames: true

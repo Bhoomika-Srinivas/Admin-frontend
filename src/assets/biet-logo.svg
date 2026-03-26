@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <rect width="80" height="80" rx="14" fill="#1e3a5f"/>
+  <rect x="10" y="10" width="60" height="60" rx="10" fill="#243e6a"/>
+  <!-- Book pages -->
+  <path d="M22 25 L22 58 Q40 52 40 52 Q58 58 58 58 L58 25 Q40 31 40 31 Q22 25 22 25Z" fill="#3b6cb0" stroke="#5a8fd4" stroke-width="1"/>
+  <line x1="40" y1="31" x2="40" y2="52" stroke="#5a8fd4" stroke-width="1.5"/>
+  <!-- BIET text -->
+  <text x="40" y="73" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#90b4e8" text-anchor="middle" letter-spacing="2">BIET</text>
+</svg>
