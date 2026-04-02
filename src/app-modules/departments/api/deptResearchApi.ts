@@ -3,14 +3,12 @@ import type {
   FacultyResearchSummary,
   PhDGuide,
   PhdScholar,
-  DeptPublication,
   PublicationProfile,
   ResearchGrant,
   Patent,
 } from '@/shared/types/models'
 
 import {
-  LIST_DEPT_PUBLICATIONS,
   LIST_PUBLICATION_PROFILES,
   LIST_RESEARCH_GRANTS,
   LIST_PATENTS,
@@ -21,9 +19,6 @@ import {
 } from '../graphql/deptResearch.query'
 
 import {
-  CREATE_DEPT_PUBLICATION,
-  UPDATE_DEPT_PUBLICATION,
-  DELETE_DEPT_PUBLICATION,
   SAVE_PUBLICATION_PROFILE,
   DELETE_PUBLICATION_PROFILE,
   CREATE_RESEARCH_GRANT,
@@ -45,7 +40,6 @@ import {
 
 // ── Backend response types (use backend primary key names) ────────────────────
 
-type BackendDeptPublication = Omit<DeptPublication, 'id'> & { deptPublicationId: string }
 type BackendPublicationProfile = Omit<PublicationProfile, 'id'> & { publicationProfileId: string }
 type BackendResearchGrant = Omit<ResearchGrant, 'id'> & { researchGrantId: string }
 type BackendPatent = Omit<Patent, 'id'> & { patentId: string }
@@ -54,11 +48,6 @@ type BackendPhDGuide = Omit<PhDGuide, 'id'> & { phdGuideId: string }
 type BackendPhdScholar = Omit<PhdScholar, 'id'> & { phdScholarId: string }
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
-
-function mapPublication(b: BackendDeptPublication): DeptPublication {
-  const { deptPublicationId, ...rest } = b
-  return { id: deptPublicationId, ...rest }
-}
 
 function mapPublicationProfile(b: BackendPublicationProfile): PublicationProfile {
   const { publicationProfileId, ...rest } = b
@@ -88,38 +77,6 @@ function mapPhDGuide(b: BackendPhDGuide): PhDGuide {
 function mapPhdScholar(b: BackendPhdScholar): PhdScholar {
   const { phdScholarId, ...rest } = b
   return { id: phdScholarId, ...rest }
-}
-
-// ── DeptPublication Service ───────────────────────────────────────────────────
-
-export const deptPublicationService = {
-  async getAll(deptId: string): Promise<DeptPublication[]> {
-    const data = await gqlRequest<{ listDeptPublications: { items: BackendDeptPublication[] } }>(
-      LIST_DEPT_PUBLICATIONS,
-      { deptId },
-    )
-    return (data.listDeptPublications?.items ?? []).map(mapPublication)
-  },
-
-  async create(input: Omit<DeptPublication, 'id'>): Promise<DeptPublication> {
-    const data = await gqlRequest<{ createDeptPublication: BackendDeptPublication }>(
-      CREATE_DEPT_PUBLICATION,
-      { input },
-    )
-    return mapPublication(data.createDeptPublication)
-  },
-
-  async update(id: string, updates: Partial<Omit<DeptPublication, 'id' | 'deptId'>>): Promise<DeptPublication> {
-    const data = await gqlRequest<{ updateDeptPublication: BackendDeptPublication }>(
-      UPDATE_DEPT_PUBLICATION,
-      { input: { deptPublicationId: id, ...updates } },
-    )
-    return mapPublication(data.updateDeptPublication)
-  },
-
-  async delete(id: string): Promise<void> {
-    await gqlRequest(DELETE_DEPT_PUBLICATION, { deptPublicationId: id })
-  },
 }
 
 // ── PublicationProfile Service ────────────────────────────────────────────────
@@ -218,21 +175,21 @@ export const facultyResearchService = {
     const {
       deptId, facultyId, researchArea, guideName, guideDesignation,
       guideInstitution, guideType, thesisTitle, university,
-      yearOfRegistration, courseWorkCompleted, prePhDVivaVoce,
+      yearOfRegistration, yearOfDegreeAwarded, courseWorkCompleted, prePhDVivaVoce,
       finalThesisSubmitted, researchStatus, thesisDocumentUrl, remarks,
     } = input
     await gqlRequest(CREATE_FACULTY_RESEARCH_SUMMARY, {
       input: {
         deptId, facultyId, researchArea, guideName, guideDesignation,
         guideInstitution, guideType, thesisTitle, university,
-        yearOfRegistration, courseWorkCompleted, prePhDVivaVoce,
+        yearOfRegistration, yearOfDegreeAwarded, courseWorkCompleted, prePhDVivaVoce,
         finalThesisSubmitted, researchStatus, thesisDocumentUrl, remarks,
       },
     })
   },
 
   async update(id: string, updates: Partial<Omit<FacultyResearchSummary, 'id' | 'deptId'>>): Promise<FacultyResearchSummary> {
-    const { department: _dept, ...rest } = updates
+    const { department: _dept, facultyId: _fid, ...rest } = updates
     const data = await gqlRequest<{ updateFacultyResearchSummary: BackendFacultyResearchSummary }>(
       UPDATE_FACULTY_RESEARCH_SUMMARY,
       { input: { facultyResearchSummaryId: id, ...rest } },

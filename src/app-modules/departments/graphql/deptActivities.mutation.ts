@@ -7,7 +7,6 @@ export const CREATE_PLACEMENT_OVERVIEW = /* GraphQL */ `
     createPlacementOverview(input: $input) {
       placementOverviewId
       deptId
-      title
       academicYear
       companiesVisited
       studentsInCampus
@@ -22,7 +21,6 @@ export const UPDATE_PLACEMENT_OVERVIEW = /* GraphQL */ `
     updatePlacementOverview(input: $input) {
       placementOverviewId
       deptId
-      title
       academicYear
       companiesVisited
       studentsInCampus
@@ -177,6 +175,7 @@ export const CREATE_FORUM_EVENT = /* GraphQL */ `
       deptId
       title
       description
+      attachmentUrl
       createdAt
     }
   }
@@ -189,6 +188,7 @@ export const UPDATE_FORUM_EVENT = /* GraphQL */ `
       deptId
       title
       description
+      attachmentUrl
       createdAt
     }
   }
@@ -241,10 +241,7 @@ export const CREATE_NEWSLETTER = /* GraphQL */ `
     createNewsletter(input: $input) {
       newsletterId
       deptId
-      title
-      volume
-      issue
-      publishedDate
+      year
       fileUrl
     }
   }
@@ -255,10 +252,7 @@ export const UPDATE_NEWSLETTER = /* GraphQL */ `
     updateNewsletter(input: $input) {
       newsletterId
       deptId
-      title
-      volume
-      issue
-      publishedDate
+      year
       fileUrl
     }
   }

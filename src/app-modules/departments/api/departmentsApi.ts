@@ -14,8 +14,9 @@ function mapDepartment(raw: Record<string, unknown>): Department {
     totalStudents: (raw.totalStudents as number) ?? 0,
     status:        ((raw.status as string) ?? 'active') as Department['status'],
     description:   (raw.description as string) ?? '',
-    image:         raw.imageUrl as string | undefined,
-    createdAt:     (raw.createdAt as string) ?? new Date().toISOString(),
+    image:        raw.imageUrl as string | undefined,
+    createdAt:    (raw.createdAt as string) ?? new Date().toISOString(),
+    programTypes: (raw.programTypes as string[] | undefined) ?? [],
   }
 }
 
@@ -42,9 +43,10 @@ export const departmentService = {
           shortName:   input.shortName,
           hod:         input.hod,
           established: input.established,
-          description: input.description,
-          imageUrl:    input.image,
-          status:      input.status,
+          description:  input.description,
+          imageUrl:     input.image,
+          status:       input.status,
+          programTypes: input.programTypes,
         },
       }
     )
@@ -65,6 +67,7 @@ export const departmentService = {
           description:   input.description,
           imageUrl:      input.image,
           status:        input.status,
+          programTypes:  input.programTypes,
         },
       }
     )

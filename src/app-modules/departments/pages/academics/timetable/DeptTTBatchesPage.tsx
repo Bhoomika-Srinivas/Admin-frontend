@@ -1,23 +1,20 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { deptBatchService } from '@/app-modules/departments/api/deptAcademicsApi'
-import { adminProgramService } from '@/app-modules/departments/api/adminCoursesApi'
-import { useDeptContext } from '@/app-modules/departments/context/DepartmentContext'
 import { useDepartmentSectionAsync } from '@/app-modules/departments/hooks/useDepartmentSection'
 import DataTable, { type Column } from '@/shared/components/tables/DataTable'
 import type { DeptBatch } from '@/shared/types/models'
 
 export default function DeptTTBatchesPage() {
-  const { deptId, programId, semester } = useParams<{
-    deptId: string; programId: string; semester: string
+  const { deptId, programType, program, semester } = useParams<{
+    deptId: string; programType: string; program: string; semester: string
   }>()
   const navigate = useNavigate()
-  const dept     = useDeptContext()
-  const program  = adminProgramService.getById(programId!)
-  const base     = `/departments/${deptId}/academics/timetable/${programId}/${semester}`
+  const prog     = decodeURIComponent(program!)
+  const base     = `/departments/${deptId}/academics/timetable`
 
   const { data: batches } = useDepartmentSectionAsync(
-    () => deptBatchService.getAll(deptId!, programId!)
+    () => deptBatchService.getAll(deptId!, programType, prog)
   )
 
   const columns: Column<DeptBatch>[] = [
@@ -36,7 +33,7 @@ export default function DeptTTBatchesPage() {
     {
       key: 'actions', header: '', className: 'w-12',
       render: r => (
-        <button onClick={() => navigate(`${base}/${encodeURIComponent(r.name)}`)}
+        <button onClick={() => navigate(`${base}/${programType}/${program}/${semester}/${encodeURIComponent(r.name)}`)}
           className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg">
           <ChevronRight size={14} />
         </button>
@@ -47,21 +44,19 @@ export default function DeptTTBatchesPage() {
   return (
     <div className="space-y-5">
       <nav className="flex items-center gap-1 text-sm flex-wrap">
-        <button onClick={() => navigate(`/departments/${deptId}/academics/timetable`)}
-          className="text-slate-500 hover:text-brand-600">Timetable</button>
+        <button onClick={() => navigate(base)} className="text-slate-500 hover:text-brand-600">Timetable</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(`/departments/${deptId}/academics/timetable/${programId}`)}
-          className="text-slate-500 hover:text-brand-600">{program?.name}</button>
+        <button onClick={() => navigate(`${base}/${programType}`)} className="text-slate-500 hover:text-brand-600">{programType}</button>
+        <span className="text-slate-300">›</span>
+        <button onClick={() => navigate(`${base}/${programType}/${program}`)} className="text-slate-500 hover:text-brand-600">{prog}</button>
         <span className="text-slate-300">›</span>
         <span className="text-slate-700 font-medium">Semester {semester}</span>
       </nav>
 
       <div>
-        <h3 className="text-base font-display font-bold text-slate-800">
-          Semester {semester} — Batches
-        </h3>
+        <h3 className="text-base font-display font-bold text-slate-800">Semester {semester} — Batches</h3>
         <p className="text-sm text-slate-500">
-          {program?.name} · {dept.shortName} · {batches.length} batch{batches.length !== 1 ? 'es' : ''}
+          {programType} · {prog} · {batches.length} batch{batches.length !== 1 ? 'es' : ''}
         </p>
       </div>
 
@@ -71,7 +66,7 @@ export default function DeptTTBatchesPage() {
           data={batches}
           keyExtractor={r => r.id}
           total={batches.length}
-          onRowClick={r => navigate(`${base}/${encodeURIComponent(r.name)}`)}
+          onRowClick={r => navigate(`${base}/${programType}/${program}/${semester}/${encodeURIComponent(r.name)}`)}
           emptyTitle="No batches yet"
           emptyDescription="Add batches in the Courses section first." />
       </div>

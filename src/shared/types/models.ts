@@ -46,6 +46,7 @@ export interface Department {
   description: string
   image?: string
   createdAt: string
+  programTypes?: string[]
 }
 
 // ─── News ─────────────────────────────────────────────────────────────────────
@@ -413,6 +414,9 @@ export interface Patent {
 export interface DeptCourse {
   id: string
   deptId: string
+  programType: string  // e.g. "UG" | "PG"
+  program: string      // e.g. "BE", "MCA"
+  batch?: string       // e.g. "2022-26"
   code: string
   name: string
   semester: number
@@ -443,15 +447,18 @@ export interface LearningMaterial {
   uploadedAt: string
 }
 
+export interface FacultyRef {
+  facultyId: string
+  facultyName: string
+}
+
 export interface InnovativeTeaching {
   id: string
   deptId: string
-  facultyName: string
-  method: string
+  faculties: FacultyRef[]
   description: string
-  courseApplied: string
-  year: string
-  outcome: string
+  imageUrls?: string[]
+  pdfUrl?: string
 }
 
 export interface ResultAnalysis {
@@ -468,7 +475,6 @@ export interface ResultAnalysis {
 export interface PlacementOverview {
   id: string
   deptId: string
-  title: string
   academicYear: string
   companiesVisited: number
   studentsInCampus: number
@@ -519,6 +525,7 @@ export interface ForumEvent {
   deptId: string
   title: string
   description: string
+  attachmentUrl?: string
   createdAt: string
 }
 
@@ -532,10 +539,7 @@ export interface DepartmentActivity {
 export interface DeptNewsletter {
   id: string
   deptId: string
-  title: string
-  volume: string
-  issue: string
-  publishedDate: string
+  year: string
   fileUrl: string
 }
 
@@ -611,8 +615,9 @@ export interface AdminBatch {
 export interface DeptBatch {
   id: string
   deptId: string
-  programId: string
-  name: string        // e.g. "2022-2026"
+  programType: string  // e.g. "UG" | "PG"
+  program: string      // e.g. "BE", "MCA", "MBA"
+  name: string         // e.g. "2022-2026"
   startYear?: number
   endYear?: number
 }

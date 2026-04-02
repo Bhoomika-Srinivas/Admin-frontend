@@ -12,6 +12,7 @@ const DEPARTMENT_FIELDS = `
   imageUrl
   createdAt
   updatedAt
+  programTypes
 `
 
 export const CREATE_DEPARTMENT = `

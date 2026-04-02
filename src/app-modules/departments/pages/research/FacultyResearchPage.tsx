@@ -145,7 +145,7 @@ export default function FacultyResearchPage() {
   const filtered = useMemo(() => data.filter(r => {
     const q   = debouncedSearch.toLowerCase()
     const name = getFacultyName(r.facultyId).toLowerCase()
-    return !q || name.includes(q) || (r.thesisTitle ?? '').toLowerCase().includes(q) || r.researchArea.toLowerCase().includes(q)
+    return !q || name.includes(q) || (r.thesisTitle ?? '').toLowerCase().includes(q) || (r.researchArea ?? '').toLowerCase().includes(q)
   }), [data, debouncedSearch])
 
   const { page, setPage, limit, data: paginated, resetPage } = usePagination(filtered)

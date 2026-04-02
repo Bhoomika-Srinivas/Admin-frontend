@@ -64,25 +64,29 @@ function toSection(r: Record<string, unknown>): DeptSection {
 
 function toBatch(r: Record<string, unknown>): DeptBatch {
   return {
-    id: r.deptBatchId as string,
-    deptId: r.deptId as string,
-    programId: r.programId as string,
-    name: r.name as string,
-    startYear: r.startYear as number | undefined,
-    endYear: r.endYear as number | undefined,
+    id:          r.deptBatchId as string,
+    deptId:      r.deptId as string,
+    programType: r.programType as string,
+    program:     r.program as string,
+    name:        r.name as string,
+    startYear:   r.startYear as number | undefined,
+    endYear:     r.endYear as number | undefined,
   }
 }
 
 function toCourse(r: Record<string, unknown>): DeptCourse {
   return {
-    id: r.deptCourseId as string,
-    deptId: r.deptId as string,
-    code: r.code as string,
-    name: r.name as string,
-    semester: r.semester as number,
-    credits: r.credits as number,
-    type: r.type as DeptCourse['type'],
-    scheme: r.scheme as string,
+    id:          r.deptCourseId as string,
+    deptId:      r.deptId as string,
+    programType: r.programType as string,
+    program:     r.program as string,
+    batch:       r.batch as string | undefined,
+    code:        r.code as string,
+    name:        r.name as string,
+    semester:    r.semester as number,
+    credits:     r.credits as number,
+    type:        r.type as DeptCourse['type'],
+    scheme:      r.scheme as string,
   }
 }
 
@@ -116,12 +120,10 @@ function toTeaching(r: Record<string, unknown>): InnovativeTeaching {
   return {
     id: r.innovativeTeachingId as string,
     deptId: r.deptId as string,
-    facultyName: r.facultyName as string,
-    method: r.method as string,
+    faculties: (r.faculties as import('@/shared/types/models').FacultyRef[] | undefined) ?? [],
     description: r.description as string,
-    courseApplied: r.courseApplied as string,
-    year: r.year as string,
-    outcome: r.outcome as string,
+    imageUrls: (r.imageUrls as string[] | undefined) ?? [],
+    pdfUrl: (r.pdfUrl as string | undefined) ?? undefined,
   }
 }
 
@@ -200,10 +202,10 @@ export const deptSectionService = {
 // ── DeptBatch service ──────────────────────────────────────────────────────────
 
 export const deptBatchService = {
-  async getAll(deptId: string, programId: string): Promise<DeptBatch[]> {
+  async getAll(deptId: string, programType?: string, program?: string): Promise<DeptBatch[]> {
     const data = await gqlRequest<{ listDeptBatches: { items: Record<string, unknown>[] } }>(
       LIST_DEPT_BATCHES,
-      { deptId, programId },
+      { deptId, ...(programType ? { programType } : {}), ...(program ? { program } : {}) },
     )
     return (data.listDeptBatches?.items ?? []).map(toBatch)
   },
@@ -211,7 +213,7 @@ export const deptBatchService = {
   async create(input: Omit<DeptBatch, 'id'>): Promise<DeptBatch> {
     const data = await gqlRequest<{ createDeptBatch: Record<string, unknown> | null }>(
       CREATE_DEPT_BATCH,
-      { input },
+      { input: { deptId: input.deptId, programType: input.programType, program: input.program, name: input.name, startYear: input.startYear, endYear: input.endYear } },
     )
     if (!data.createDeptBatch) throw new Error('Failed to create batch: no data returned')
     return toBatch(data.createDeptBatch)
@@ -225,10 +227,10 @@ export const deptBatchService = {
 // ── DeptCourse service ─────────────────────────────────────────────────────────
 
 export const deptCourseService = {
-  async getAll(deptId: string): Promise<DeptCourse[]> {
+  async getAll(deptId: string, filters?: { programType?: string; program?: string; batch?: string; semester?: number }): Promise<DeptCourse[]> {
     const data = await gqlRequest<{ listDeptCourses: { items: Record<string, unknown>[] } }>(
       LIST_DEPT_COURSES,
-      { deptId },
+      { deptId, ...filters },
     )
     return (data.listDeptCourses?.items ?? []).map(toCourse)
   },

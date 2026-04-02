@@ -1,43 +1,3 @@
-// ── DeptPublication ───────────────────────────────────────────────────────────
-
-export const CREATE_DEPT_PUBLICATION = `
-  mutation CreateDeptPublication($input: CreateDeptPublicationInput!) {
-    createDeptPublication(input: $input) {
-      deptPublicationId
-      deptId
-      title
-      authors
-      journal
-      year
-      type
-      doi
-    }
-  }
-`
-
-export const UPDATE_DEPT_PUBLICATION = `
-  mutation UpdateDeptPublication($input: UpdateDeptPublicationInput!) {
-    updateDeptPublication(input: $input) {
-      deptPublicationId
-      deptId
-      title
-      authors
-      journal
-      year
-      type
-      doi
-    }
-  }
-`
-
-export const DELETE_DEPT_PUBLICATION = `
-  mutation DeleteDeptPublication($deptPublicationId: ID!) {
-    deleteDeptPublication(deptPublicationId: $deptPublicationId) {
-      deptPublicationId
-    }
-  }
-`
-
 // ── PublicationProfile ────────────────────────────────────────────────────────
 
 export const SAVE_PUBLICATION_PROFILE = `
@@ -140,6 +100,7 @@ export const UPDATE_FACULTY_RESEARCH_SUMMARY = `
       thesisTitle
       university
       yearOfRegistration
+      yearOfDegreeAwarded
       courseWorkCompleted
       prePhDVivaVoce
       finalThesisSubmitted

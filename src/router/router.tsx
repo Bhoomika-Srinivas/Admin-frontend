@@ -18,10 +18,12 @@ import PublicationsPage from '@/app-modules/departments/pages/research/Publicati
 import GrantsPage from '@/app-modules/departments/pages/research/GrantsPage'
 import PatentsPage from '@/app-modules/departments/pages/research/PatentsPage'
 import DeptCatalogProgramsPage from '@/app-modules/departments/pages/academics/DeptCatalogProgramsPage'
+import DeptCatalogProgramListPage from '@/app-modules/departments/pages/academics/DeptCatalogProgramListPage'
 import DeptCatalogSemestersPage from '@/app-modules/departments/pages/academics/DeptCatalogSemestersPage'
 import DeptCatalogBatchesPage from '@/app-modules/departments/pages/academics/DeptCatalogBatchesPage'
 import DeptCatalogCoursesPage from '@/app-modules/departments/pages/academics/DeptCatalogCoursesPage'
 import DeptTTProgramsPage from '@/app-modules/departments/pages/academics/timetable/DeptTTProgramsPage'
+import DeptTTProgramListPage from '@/app-modules/departments/pages/academics/timetable/DeptTTProgramListPage'
 import DeptTTSemestersPage from '@/app-modules/departments/pages/academics/timetable/DeptTTSemestersPage'
 import DeptTTBatchesPage from '@/app-modules/departments/pages/academics/timetable/DeptTTBatchesPage'
 import DeptTTSectionsPage from '@/app-modules/departments/pages/academics/timetable/DeptTTSectionsPage'
@@ -83,15 +85,17 @@ const deptWorkspaceChildren = [
   { path: 'research/grants',       element: <GrantsPage /> },
   { path: 'research/patents',      element: <PatentsPage /> },
   // Academics
-  { path: 'academics/courses',                                     element: <DeptCatalogProgramsPage /> },
-  { path: 'academics/courses/:programId',                          element: <DeptCatalogSemestersPage /> },
-  { path: 'academics/courses/:programId/:semester',                element: <DeptCatalogBatchesPage /> },
-  { path: 'academics/courses/:programId/:semester/:batch',         element: <DeptCatalogCoursesPage /> },
+  { path: 'academics/courses',                                                    element: <DeptCatalogProgramsPage /> },
+  { path: 'academics/courses/:programType',                                       element: <DeptCatalogProgramListPage /> },
+  { path: 'academics/courses/:programType/:program',                              element: <DeptCatalogSemestersPage /> },
+  { path: 'academics/courses/:programType/:program/:semester',                    element: <DeptCatalogBatchesPage /> },
+  { path: 'academics/courses/:programType/:program/:semester/:batch',             element: <DeptCatalogCoursesPage /> },
   { path: 'academics/timetable',                                                              element: <DeptTTProgramsPage /> },
-  { path: 'academics/timetable/:programId',                                                   element: <DeptTTSemestersPage /> },
-  { path: 'academics/timetable/:programId/:semester',                                         element: <DeptTTBatchesPage /> },
-  { path: 'academics/timetable/:programId/:semester/:batch',                                  element: <DeptTTSectionsPage /> },
-  { path: 'academics/timetable/:programId/:semester/:batch/:section',                         element: <DeptTimetableViewPage /> },
+  { path: 'academics/timetable/:programType',                                                 element: <DeptTTProgramListPage /> },
+  { path: 'academics/timetable/:programType/:program',                                        element: <DeptTTSemestersPage /> },
+  { path: 'academics/timetable/:programType/:program/:semester',                              element: <DeptTTBatchesPage /> },
+  { path: 'academics/timetable/:programType/:program/:semester/:batch',                       element: <DeptTTSectionsPage /> },
+  { path: 'academics/timetable/:programType/:program/:semester/:batch/:section',              element: <DeptTimetableViewPage /> },
   { path: 'academics/materials',                                                              element: <DeptLMProgramsPage /> },
   { path: 'academics/materials/:programId',                                                   element: <DeptLMSemestersPage /> },
   { path: 'academics/materials/:programId/:semester',                                         element: <DeptLMBatchesPage /> },

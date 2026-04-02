@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Plus, Edit2, Trash2, Info } from 'lucide-react'
 import { deptCourseService, deptSectionService, deptSlotService } from '@/app-modules/departments/api/deptAcademicsApi'
-import { adminProgramService } from '@/app-modules/departments/api/adminCoursesApi'
-import { useDeptContext } from '@/app-modules/departments/context/DepartmentContext'
 import type { TimetableDay, DeptCourse, DeptSection, DeptSlot, Faculty } from '@/shared/types/models'
 import { facultyService } from '@/app-modules/faculty/api/facultyApi'
 import { useAuth } from '@/auth/AuthContext'
@@ -46,17 +44,17 @@ type SlotForm = { day: TimetableDay; period: number; courseId: string; facultyId
 const blankForm = (day: TimetableDay = 'Mon', period = 1): SlotForm => ({ day, period, courseId: '', facultyId: '' })
 
 export default function DeptTimetableViewPage() {
-  const { deptId, programId, semester, batch, section } = useParams<{
-    deptId: string; programId: string; semester: string; batch: string; section: string
+  const { deptId, programType, program, semester, batch, section } = useParams<{
+    deptId: string; programType: string; program: string; semester: string; batch: string; section: string
   }>()
   const sem       = Number(semester)
+  const prog      = decodeURIComponent(program!)
   const batchName = decodeURIComponent(batch!)
   const navigate  = useNavigate()
   const { user: _user } = useAuth()
   const toast     = useToast()
-  const dept      = useDeptContext()
-  const program   = adminProgramService.getById(programId!)
-  const semBase   = `/departments/${deptId}/academics/timetable/${programId}/${semester}`
+  const base      = `/departments/${deptId}/academics/timetable`
+  const semBase   = `${base}/${programType}/${program}/${semester}`
 
   const [allFaculty, setAllFaculty]             = useState<Faculty[]>([])
   const [availableCourses, setAvailableCourses] = useState<DeptCourse[]>([])
@@ -75,7 +73,7 @@ export default function DeptTimetableViewPage() {
 
   // Fetch section then slots from GraphQL
   useEffect(() => {
-    deptSectionService.getAll(deptId!, programId!, sem, batchName)
+    deptSectionService.getAll(deptId!, prog, sem, batchName)
       .then(sections => {
         const found = sections.find(s => s.name === section)
         setSectionObj(found)
@@ -86,7 +84,7 @@ export default function DeptTimetableViewPage() {
         }
       })
       .catch(() => {})
-  }, [deptId, programId, sem, batchName, section])
+  }, [deptId, prog, sem, batchName, section])
 
   useEffect(() => { facultyService.getAll().then(setAllFaculty).catch(() => {}) }, [])
 
@@ -162,17 +160,15 @@ export default function DeptTimetableViewPage() {
   return (
     <div className="space-y-5">
       <nav className="flex items-center gap-1 text-sm flex-wrap">
-        <button onClick={() => navigate(`/departments/${deptId}/academics/timetable`)}
-          className="text-slate-500 hover:text-brand-600">Timetable</button>
+        <button onClick={() => navigate(base)} className="text-slate-500 hover:text-brand-600">Timetable</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(`/departments/${deptId}/academics/timetable/${programId}`)}
-          className="text-slate-500 hover:text-brand-600">{program?.name}</button>
+        <button onClick={() => navigate(`${base}/${programType}`)} className="text-slate-500 hover:text-brand-600">{programType}</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(semBase)}
-          className="text-slate-500 hover:text-brand-600">Sem {semester}</button>
+        <button onClick={() => navigate(`${base}/${programType}/${program}`)} className="text-slate-500 hover:text-brand-600">{prog}</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(`${semBase}/${encodeURIComponent(batchName)}`)}
-          className="text-slate-500 hover:text-brand-600">{batchName}</button>
+        <button onClick={() => navigate(semBase)} className="text-slate-500 hover:text-brand-600">Sem {semester}</button>
+        <span className="text-slate-300">›</span>
+        <button onClick={() => navigate(`${semBase}/${encodeURIComponent(batchName)}`)} className="text-slate-500 hover:text-brand-600">{batchName}</button>
         <span className="text-slate-300">›</span>
         <span className="text-slate-700 font-medium">Section {section}</span>
       </nav>
@@ -180,10 +176,10 @@ export default function DeptTimetableViewPage() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-display font-bold text-slate-800">
-            Section {section} — {dept.shortName} · Sem {semester} · {batchName}
+            Section {section} — {prog} · Sem {semester} · {batchName}
           </h3>
           <p className="text-sm text-slate-500">
-            {filledSlots} / {totalSlots} slots filled • {program?.name}
+            {filledSlots} / {totalSlots} slots filled • {programType} · {prog}
           </p>
         </div>
       </div>

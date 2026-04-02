@@ -57,7 +57,6 @@ function mapPlacementOverview(r: Record<string, unknown>): PlacementOverview {
   return {
     id:                String(r.placementOverviewId),
     deptId:            String(r.deptId),
-    title:             String(r.title ?? ''),
     academicYear:      String(r.academicYear ?? ''),
     companiesVisited:  Number(r.companiesVisited ?? 0),
     studentsInCampus:  Number(r.studentsInCampus ?? 0),
@@ -114,11 +113,12 @@ function mapForumSection(r: Record<string, unknown>): ForumSection {
 
 function mapForumEvent(r: Record<string, unknown>): ForumEvent {
   return {
-    id:          String(r.forumEventId),
-    deptId:      String(r.deptId),
-    title:       String(r.title ?? ''),
-    description: String(r.description ?? ''),
-    createdAt:   String(r.createdAt ?? ''),
+    id:            String(r.forumEventId),
+    deptId:        String(r.deptId),
+    title:         String(r.title ?? ''),
+    description:   String(r.description ?? ''),
+    attachmentUrl: r.attachmentUrl ? String(r.attachmentUrl) : undefined,
+    createdAt:     String(r.createdAt ?? ''),
   }
 }
 
@@ -133,13 +133,10 @@ function mapDepartmentActivity(r: Record<string, unknown>): DepartmentActivity {
 
 function mapNewsletter(r: Record<string, unknown>): DeptNewsletter {
   return {
-    id:            String(r.newsletterId),
-    deptId:        String(r.deptId),
-    title:         String(r.title ?? ''),
-    volume:        String(r.volume ?? ''),
-    issue:         String(r.issue ?? ''),
-    publishedDate: String(r.publishedDate ?? ''),
-    fileUrl:       String(r.fileUrl ?? ''),
+    id:      String(r.newsletterId),
+    deptId:  String(r.deptId),
+    year:    String(r.year ?? ''),
+    fileUrl: String(r.fileUrl ?? ''),
   }
 }
 
@@ -387,7 +384,7 @@ export const newsletterService = {
   async create(input: Omit<DeptNewsletter, 'id'>): Promise<DeptNewsletter> {
     const data = await gqlRequest<{ createNewsletter: Record<string, unknown> }>(
       CREATE_NEWSLETTER,
-      { input },
+      { input: { deptId: input.deptId, year: input.year, fileUrl: input.fileUrl } },
     )
     return mapNewsletter(data.createNewsletter)
   },
@@ -395,7 +392,7 @@ export const newsletterService = {
   async update(id: string, patch: Partial<Omit<DeptNewsletter, 'id'>>): Promise<DeptNewsletter> {
     const data = await gqlRequest<{ updateNewsletter: Record<string, unknown> }>(
       UPDATE_NEWSLETTER,
-      { input: { newsletterId: id, ...patch } },
+      { input: { newsletterId: id, year: patch.year, fileUrl: patch.fileUrl } },
     )
     return mapNewsletter(data.updateNewsletter)
   },

@@ -6,7 +6,6 @@ export const LIST_PLACEMENT_OVERVIEWS = /* GraphQL */ `
       items {
         placementOverviewId
         deptId
-        title
         academicYear
         companiesVisited
         studentsInCampus
@@ -86,6 +85,7 @@ export const LIST_FORUM_EVENTS = /* GraphQL */ `
         deptId
         title
         description
+        attachmentUrl
         createdAt
       }
       nextToken
@@ -113,10 +113,7 @@ export const LIST_NEWSLETTERS = /* GraphQL */ `
       items {
         newsletterId
         deptId
-        title
-        volume
-        issue
-        publishedDate
+        year
         fileUrl
       }
     }

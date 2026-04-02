@@ -2,8 +2,6 @@ import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Plus, Edit2, Trash2 } from 'lucide-react'
 import { deptCourseService } from '@/app-modules/departments/api/deptAcademicsApi'
-import { adminProgramService } from '@/app-modules/departments/api/adminCoursesApi'
-import { useDeptContext } from '@/app-modules/departments/context/DepartmentContext'
 import { useDepartmentSectionAsync } from '@/app-modules/departments/hooks/useDepartmentSection'
 import type { DeptCourse } from '@/shared/types/models'
 import { useToast } from '@/shared/context/ToastContext'
@@ -22,66 +20,57 @@ const TYPE_BADGE: Record<DeptCourse['type'], 'blue' | 'purple' | 'yellow'> = {
   theory: 'blue', lab: 'purple', elective: 'yellow',
 }
 
-const emptyForm = (): Omit<DeptCourse, 'id' | 'deptId' | 'semester'> => ({
-  code: '', name: '', type: 'theory', credits: 3, scheme: '',
-})
+type CourseForm = Omit<DeptCourse, 'id' | 'deptId' | 'programType' | 'program' | 'batch' | 'semester'>
+const emptyForm = (): CourseForm => ({ code: '', name: '', type: 'theory', credits: 3, scheme: '' })
 
 export default function DeptCatalogCoursesPage() {
-  const { deptId, programId, semester, batch } = useParams<{
-    deptId: string; programId: string; semester: string; batch: string
+  const { deptId, programType, program, semester, batch } = useParams<{
+    deptId: string; programType: string; program: string; semester: string; batch: string
   }>()
   const sem       = Number(semester)
-  const batchYear = decodeURIComponent(batch!)
+  const prog      = decodeURIComponent(program!)
+  const batchName = decodeURIComponent(batch!)
   const navigate  = useNavigate()
   const toast     = useToast()
-  const dept      = useDeptContext()
-  const program   = adminProgramService.getById(programId!)
+  const base      = `/departments/${deptId}/academics/courses`
 
-  const { data: allCourses, reload } = useDepartmentSectionAsync(
-    () => deptCourseService.getAll(deptId!)
+  const { data: courses, reload } = useDepartmentSectionAsync(
+    () => deptCourseService.getAll(deptId!, { programType, program: prog, batch: batchName, semester: sem })
   )
 
-  // Filter to this semester client-side
-  const semesterCourses = useMemo(
-    () => allCourses.filter(c => c.semester === sem),
-    [allCourses, sem]
-  )
-
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editItem, setEditItem]   = useState<DeptCourse | null>(null)
-  const [form, setForm]           = useState(emptyForm)
+  const [modalOpen, setModalOpen]   = useState(false)
+  const [editItem, setEditItem]     = useState<DeptCourse | null>(null)
+  const [form, setForm]             = useState<CourseForm>(emptyForm)
   const [typeFilter, setTypeFilter] = useState('')
-  const deleteDialog              = useConfirmDialog()
+  const deleteDialog                = useConfirmDialog()
   const { searchTerm, setSearchTerm, debouncedSearch } = useSearch()
 
-  const filtered = useMemo(() => semesterCourses.filter(c => {
+  const filtered = useMemo(() => courses.filter(c => {
     const q = debouncedSearch.toLowerCase()
     return (
       (!q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)) &&
       (!typeFilter || c.type === typeFilter)
     )
-  }), [semesterCourses, debouncedSearch, typeFilter])
+  }), [courses, debouncedSearch, typeFilter])
 
   const { page, setPage, limit, data: paginated, resetPage } = usePagination(filtered)
 
-  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
+  const set = <K extends keyof CourseForm>(k: K, v: CourseForm[K]) =>
     setForm(f => ({ ...f, [k]: v }))
 
   async function handleSave() {
-    if (!form.code.trim() || !form.name.trim()) {
-      toast.error('Code and name are required')
-      return
-    }
+    if (!form.code.trim() || !form.name.trim()) { toast.error('Code and name are required'); return }
     try {
       if (editItem) {
-        await deptCourseService.update(editItem.id, form)
+        await deptCourseService.update(editItem.id, { ...form, programType, program: prog, batch: batchName })
         toast.success('Course updated')
       } else {
-        await deptCourseService.create({ ...form, deptId: deptId!, semester: sem })
+        await deptCourseService.create({
+          ...form, deptId: deptId!, programType: programType!, program: prog, batch: batchName, semester: sem,
+        })
         toast.success('Course added')
       }
-      reload()
-      setModalOpen(false)
+      reload(); setModalOpen(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save')
     }
@@ -91,9 +80,7 @@ export default function DeptCatalogCoursesPage() {
     if (!deleteDialog.targetId) return
     try {
       await deptCourseService.delete(deleteDialog.targetId)
-      reload()
-      deleteDialog.close()
-      toast.success('Deleted')
+      reload(); deleteDialog.close(); toast.success('Deleted')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to delete')
     }
@@ -106,15 +93,14 @@ export default function DeptCatalogCoursesPage() {
     setModalOpen(true)
   }
 
-  const totalCredits = semesterCourses.reduce((s, c) => s + c.credits, 0)
+  const totalCredits = courses.reduce((s, c) => s + c.credits, 0)
 
   const columns: Column<DeptCourse>[] = [
-    { key: 'index',   header: '#',           render: r => <span className="text-xs text-slate-400">{semesterCourses.indexOf(r) + 1}</span> },
-    { key: 'code',    header: 'Code',         render: r => <span className="font-mono text-xs font-semibold text-brand-700">{r.code}</span> },
-    { key: 'name',    header: 'Course Name',  render: r => <span className="font-medium text-sm">{r.name}</span> },
-    { key: 'type',    header: 'Type',         render: r => <Badge variant={TYPE_BADGE[r.type]}>{r.type}</Badge> },
-    { key: 'credits', header: 'Credits',      render: r => <span className="text-sm">{r.credits}</span> },
-    { key: 'scheme',  header: 'Scheme',       render: r => <span className="text-sm text-slate-500">{r.scheme}</span> },
+    { key: 'code',    header: 'Code',        render: r => <span className="font-mono text-xs font-semibold text-brand-700">{r.code}</span> },
+    { key: 'name',    header: 'Course Name', render: r => <span className="font-medium text-sm">{r.name}</span> },
+    { key: 'type',    header: 'Type',        render: r => <Badge variant={TYPE_BADGE[r.type]}>{r.type}</Badge> },
+    { key: 'credits', header: 'Credits',     render: r => <span className="text-sm">{r.credits}</span> },
+    { key: 'scheme',  header: 'Scheme',      render: r => <span className="text-sm text-slate-500">{r.scheme}</span> },
     {
       key: 'actions', header: '', className: 'w-16',
       render: r => (
@@ -126,31 +112,27 @@ export default function DeptCatalogCoursesPage() {
     },
   ]
 
-  const semBase = `/departments/${deptId}/academics/courses/${programId}/${semester}`
-
   return (
     <div className="space-y-5">
       <nav className="flex items-center gap-1 text-sm flex-wrap">
-        <button onClick={() => navigate(`/departments/${deptId}/academics/courses`)}
-          className="text-slate-500 hover:text-brand-600">Courses</button>
+        <button onClick={() => navigate(base)} className="text-slate-500 hover:text-brand-600">Courses</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(`/departments/${deptId}/academics/courses/${programId}`)}
-          className="text-slate-500 hover:text-brand-600">{program?.name}</button>
+        <button onClick={() => navigate(`${base}/${programType}`)} className="text-slate-500 hover:text-brand-600">{programType}</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(semBase)} className="text-slate-500 hover:text-brand-600">
-          Semester {semester}
-        </button>
+        <button onClick={() => navigate(`${base}/${programType}/${program}`)} className="text-slate-500 hover:text-brand-600">{prog}</button>
         <span className="text-slate-300">›</span>
-        <span className="text-slate-700 font-medium">{batchYear}</span>
+        <button onClick={() => navigate(`${base}/${programType}/${program}/${semester}`)} className="text-slate-500 hover:text-brand-600">Sem {semester}</button>
+        <span className="text-slate-300">›</span>
+        <span className="text-slate-700 font-medium">{batchName}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-display font-bold text-slate-800">
-            {dept.shortName} · Sem {semester} · {batchYear}
+            {prog} · Sem {semester} · {batchName}
           </h3>
           <p className="text-sm text-slate-500">
-            {semesterCourses.length} courses · {totalCredits} credits
+            {courses.length} course{courses.length !== 1 ? 's' : ''} · {totalCredits} credits
           </p>
         </div>
         <button onClick={openAdd} className="btn-primary flex items-center gap-1.5">
@@ -160,35 +142,19 @@ export default function DeptCatalogCoursesPage() {
 
       <div className="card">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <SearchBar
-            value={searchTerm}
-            onChange={v => { setSearchTerm(v); resetPage() }}
-            placeholder="Search courses..."
-            className="max-w-xs"
-          />
-          <SelectFilter
-            value={typeFilter}
-            onChange={v => { setTypeFilter(v); resetPage() }}
+          <SearchBar value={searchTerm} onChange={v => { setSearchTerm(v); resetPage() }}
+            placeholder="Search courses..." className="max-w-xs" />
+          <SelectFilter value={typeFilter} onChange={v => { setTypeFilter(v); resetPage() }}
             options={[
               { value: 'theory', label: 'Theory' },
               { value: 'lab', label: 'Lab' },
               { value: 'elective', label: 'Elective' },
             ]}
-            placeholder="All Types"
-            className="w-36"
-          />
+            placeholder="All Types" className="w-36" />
         </div>
-        <DataTable
-          columns={columns}
-          data={paginated}
-          keyExtractor={r => r.id}
-          total={filtered.length}
-          page={page}
-          limit={limit}
-          onPageChange={setPage}
-          emptyTitle="No courses yet"
-          emptyDescription="Add courses using the button above."
-        />
+        <DataTable columns={columns} data={paginated} keyExtractor={r => r.id}
+          total={filtered.length} page={page} limit={limit} onPageChange={setPage}
+          emptyTitle="No courses yet" emptyDescription="Add courses using the button above." />
       </div>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}
