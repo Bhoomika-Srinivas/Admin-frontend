@@ -16,7 +16,7 @@ import { useConfirmDialog } from '@/shared/hooks/useConfirmDialog'
 import { usePagination } from '@/shared/hooks/usePagination'
 import { useSearch } from '@/shared/hooks/useSearch'
 
-const emptyForm: Omit<DeptCourse, 'id' | 'deptId'> = { code: '', name: '', semester: 1, credits: 3, type: 'theory', scheme: '' }
+const emptyForm: Omit<DeptCourse, 'id' | 'deptId'> = { programType: 'UG', program: '', batch: '', code: '', name: '', semester: 1, credits: 3, type: 'theory', scheme: '' }
 const typeColor = { theory: 'blue', lab: 'purple', elective: 'yellow' } as const
 const semesterOptions = [1,2,3,4,5,6,7,8].map(s => ({ value: String(s), label: `Semester ${s}` }))
 
@@ -42,6 +42,7 @@ export default function CoursesPage() {
   const { page, setPage, limit, data: paginated, resetPage } = usePagination(filtered)
 
   async function handleSave() {
+    if (!form.programType || !form.program) { toast.error('Program Type and Program are required'); return }
     if (!form.code || !form.name) { toast.error('Code and name are required'); return }
     try {
       if (editItem) {
@@ -68,7 +69,7 @@ export default function CoursesPage() {
   }
 
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setModalOpen(true) }
-  const openEdit = (item: DeptCourse) => { setEditItem(item); setForm({ code: item.code, name: item.name, semester: item.semester, credits: item.credits, type: item.type, scheme: item.scheme }); setModalOpen(true) }
+  const openEdit = (item: DeptCourse) => { setEditItem(item); setForm({ programType: item.programType, program: item.program, batch: item.batch ?? '', code: item.code, name: item.name, semester: item.semester, credits: item.credits, type: item.type, scheme: item.scheme }); setModalOpen(true) }
 
   const columns: Column<DeptCourse>[] = [
     { key: 'code', header: 'Code', render: r => <span className="font-mono font-semibold text-sm text-brand-700">{r.code}</span> },
@@ -103,6 +104,20 @@ export default function CoursesPage() {
       </div>
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Edit Course' : 'Add Course'} size="lg">
         <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-4">
+            <FormField label="Program Type" required>
+              <select className="input-field" value={form.programType} onChange={e => setForm(f => ({ ...f, programType: e.target.value }))}>
+                <option value="UG">UG</option>
+                <option value="PG">PG</option>
+              </select>
+            </FormField>
+            <FormField label="Program" required>
+              <input className="input-field" placeholder="e.g. BE, MCA" value={form.program} onChange={e => setForm(f => ({ ...f, program: e.target.value }))} />
+            </FormField>
+            <FormField label="Batch">
+              <input className="input-field" placeholder="e.g. 2022-26" value={form.batch ?? ''} onChange={e => setForm(f => ({ ...f, batch: e.target.value }))} />
+            </FormField>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Course Code" required><input className="input-field font-mono" placeholder="e.g. CS601" value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} /></FormField>
             <FormField label="Type">

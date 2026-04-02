@@ -1,9 +1,12 @@
 export const LIST_DEPT_COURSES = /* GraphQL */ `
-  query ListDeptCourses($deptId: ID!, $semester: Int, $type: String, $limit: Int, $nextToken: String) {
-    listDeptCourses(deptId: $deptId, semester: $semester, type: $type, limit: $limit, nextToken: $nextToken) {
+  query ListDeptCourses($deptId: ID!, $programType: String, $program: String, $batch: String, $semester: Int, $type: String, $limit: Int, $nextToken: String) {
+    listDeptCourses(deptId: $deptId, programType: $programType, program: $program, batch: $batch, semester: $semester, type: $type, limit: $limit, nextToken: $nextToken) {
       items {
         deptCourseId
         deptId
+        programType
+        program
+        batch
         code
         name
         semester
@@ -21,6 +24,9 @@ export const GET_DEPT_COURSE = /* GraphQL */ `
     getDeptCourse(deptCourseId: $deptCourseId) {
       deptCourseId
       deptId
+      programType
+      program
+      batch
       code
       name
       semester
@@ -71,12 +77,13 @@ export const LIST_INNOVATIVE_TEACHING = /* GraphQL */ `
       items {
         innovativeTeachingId
         deptId
-        facultyName
-        method
+        faculties {
+          facultyId
+          facultyName
+        }
         description
-        courseApplied
-        year
-        outcome
+        imageUrls
+        pdfUrl
       }
     }
   }
@@ -116,12 +123,13 @@ export const LIST_DEPT_SECTIONS = /* GraphQL */ `
 `
 
 export const LIST_DEPT_BATCHES = /* GraphQL */ `
-  query ListDeptBatches($deptId: ID!, $programId: ID) {
-    listDeptBatches(deptId: $deptId, programId: $programId) {
+  query ListDeptBatches($deptId: ID!, $programType: String, $program: String) {
+    listDeptBatches(deptId: $deptId, programType: $programType, program: $program) {
       items {
         deptBatchId
         deptId
-        programId
+        programType
+        program
         name
         startYear
         endYear

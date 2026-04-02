@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Plus, Trash2, ChevronRight, LayoutGrid } from 'lucide-react'
 import { deptSectionService } from '@/app-modules/departments/api/deptAcademicsApi'
-import { adminProgramService } from '@/app-modules/departments/api/adminCoursesApi'
-import { useDeptContext } from '@/app-modules/departments/context/DepartmentContext'
 import { useDepartmentSectionAsync } from '@/app-modules/departments/hooks/useDepartmentSection'
 import type { DeptSection } from '@/shared/types/models'
 import { useToast } from '@/shared/context/ToastContext'
@@ -14,19 +12,19 @@ import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
 import { useConfirmDialog } from '@/shared/hooks/useConfirmDialog'
 
 export default function DeptTTSectionsPage() {
-  const { deptId, programId, semester, batch } = useParams<{
-    deptId: string; programId: string; semester: string; batch: string
+  const { deptId, programType, program, semester, batch } = useParams<{
+    deptId: string; programType: string; program: string; semester: string; batch: string
   }>()
   const sem       = Number(semester)
+  const prog      = decodeURIComponent(program!)
   const batchName = decodeURIComponent(batch!)
   const navigate  = useNavigate()
   const toast     = useToast()
-  const dept      = useDeptContext()
-  const program   = adminProgramService.getById(programId!)
-  const semBase   = `/departments/${deptId}/academics/timetable/${programId}/${semester}`
+  const base      = `/departments/${deptId}/academics/timetable`
+  const semBase   = `${base}/${programType}/${program}/${semester}`
 
   const { data: sections, reload } = useDepartmentSectionAsync(
-    () => deptSectionService.getAll(deptId!, programId!, sem, batchName)
+    () => deptSectionService.getAll(deptId!, prog, sem, batchName)
   )
 
   const [modalOpen, setModalOpen]     = useState(false)
@@ -40,11 +38,11 @@ export default function DeptTTSectionsPage() {
     }
     try {
       await deptSectionService.create({
-        deptId: deptId!,
-        programId: programId!,
+        deptId:    deptId!,
+        programId: prog,
         batchName,
-        semester: sem,
-        name: sectionName.trim(),
+        semester:  sem,
+        name:      sectionName.trim(),
       })
       toast.success('Section added')
       reload(); setSectionName(''); setModalOpen(false)
@@ -95,14 +93,13 @@ export default function DeptTTSectionsPage() {
   return (
     <div className="space-y-5">
       <nav className="flex items-center gap-1 text-sm flex-wrap">
-        <button onClick={() => navigate(`/departments/${deptId}/academics/timetable`)}
-          className="text-slate-500 hover:text-brand-600">Timetable</button>
+        <button onClick={() => navigate(base)} className="text-slate-500 hover:text-brand-600">Timetable</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(`/departments/${deptId}/academics/timetable/${programId}`)}
-          className="text-slate-500 hover:text-brand-600">{program?.name}</button>
+        <button onClick={() => navigate(`${base}/${programType}`)} className="text-slate-500 hover:text-brand-600">{programType}</button>
         <span className="text-slate-300">›</span>
-        <button onClick={() => navigate(semBase)}
-          className="text-slate-500 hover:text-brand-600">Semester {semester}</button>
+        <button onClick={() => navigate(`${base}/${programType}/${program}`)} className="text-slate-500 hover:text-brand-600">{prog}</button>
+        <span className="text-slate-300">›</span>
+        <button onClick={() => navigate(semBase)} className="text-slate-500 hover:text-brand-600">Semester {semester}</button>
         <span className="text-slate-300">›</span>
         <span className="text-slate-700 font-medium">{batchName}</span>
       </nav>
@@ -110,7 +107,7 @@ export default function DeptTTSectionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-display font-bold text-slate-800">
-            Sections — {dept.shortName} · Sem {semester} · {batchName}
+            Sections — {prog} · Sem {semester} · {batchName}
           </h3>
           <p className="text-sm text-slate-500">
             {sections.length} section{sections.length !== 1 ? 's' : ''} · Click a section to manage its timetable

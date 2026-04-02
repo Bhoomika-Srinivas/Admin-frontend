@@ -1,22 +1,3 @@
-// ── Publications ──────────────────────────────────────────────────────────────
-
-export const LIST_DEPT_PUBLICATIONS = `
-  query ListDeptPublications($deptId: ID!) {
-    listDeptPublications(deptId: $deptId) {
-      items {
-        deptPublicationId
-        deptId
-        title
-        authors
-        journal
-        year
-        type
-        doi
-      }
-    }
-  }
-`
-
 // ── Publication Profiles ───────────────────────────────────────────────────────
 
 export const LIST_PUBLICATION_PROFILES = `

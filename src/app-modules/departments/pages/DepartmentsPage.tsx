@@ -25,9 +25,11 @@ const statusOptions = [
   { value: 'inactive', label: 'Inactive' },
 ]
 
+const PROGRAM_TYPE_OPTIONS = ['UG', 'PG', 'Research']
+
 const emptyForm: Partial<Department> = {
   name: '', shortName: '', hod: '', established: new Date().getFullYear(),
-  totalFaculty: 0, totalStudents: 0, status: 'active', description: ''
+  totalFaculty: 0, totalStudents: 0, status: 'active', description: '', programTypes: []
 }
 
 export default function DepartmentsPage() {
@@ -234,6 +236,26 @@ export default function DepartmentsPage() {
           </FormField>
           <FormField label="Description" error={errors.description?.[0]}>
             <textarea className="input-field h-24 resize-none" value={form.description ?? ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} onBlur={e => validateField('description', e.target.value)} />
+          </FormField>
+          <FormField label="Program Types">
+            <div className="flex items-center gap-4">
+              {PROGRAM_TYPE_OPTIONS.map(pt => (
+                <label key={pt} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                    checked={(form.programTypes ?? []).includes(pt)}
+                    onChange={e => setForm(f => ({
+                      ...f,
+                      programTypes: e.target.checked
+                        ? [...(f.programTypes ?? []), pt]
+                        : (f.programTypes ?? []).filter(p => p !== pt),
+                    }))}
+                  />
+                  <span className="text-sm text-slate-700">{pt}</span>
+                </label>
+              ))}
+            </div>
           </FormField>
         </div>
         <ModalFooter>

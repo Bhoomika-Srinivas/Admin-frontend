@@ -12,11 +12,21 @@ import { useDepartmentSectionAsync } from '@/app-modules/departments/hooks/useDe
 import { useConfirmDialog } from '@/shared/hooks/useConfirmDialog'
 import { usePagination } from '@/shared/hooks/usePagination'
 
-const DEFAULT_TITLE = 'Students Placed in Various IT Companies'
+function currentAcademicYear(): string {
+  const now = new Date()
+  const startYear = now.getMonth() < 6 ? now.getFullYear() - 1 : now.getFullYear()
+  return `${startYear}-${String(startYear + 1).slice(-2)}`
+}
+
+const ACADEMIC_YEARS = Array.from({ length: 10 }, (_, i) => {
+  const now = new Date()
+  const base = now.getMonth() < 6 ? now.getFullYear() - 1 : now.getFullYear()
+  const y = base - i
+  return `${y}-${String(y + 1).slice(-2)}`
+})
 
 const emptyForm: Omit<PlacementOverview, 'id' | 'deptId'> = {
-  title:            DEFAULT_TITLE,
-  academicYear:     '',
+  academicYear:     currentAcademicYear(),
   companiesVisited: 0,
   studentsInCampus: 0,
   studentsOffCampus: 0,
@@ -38,7 +48,6 @@ export default function DeptPlacementsPage() {
     setForm(f => ({ ...f, [k]: v }))
 
   async function handleSave() {
-    if (!form.academicYear.trim()) { toast.error('Academic year is required'); return }
     if (!form.highestPackage.trim()) { toast.error('Highest package is required'); return }
     try {
       if (editItem) {
@@ -70,7 +79,6 @@ export default function DeptPlacementsPage() {
   function openEdit(item: PlacementOverview) {
     setEditItem(item)
     setForm({
-      title:             item.title,
       academicYear:      item.academicYear,
       companiesVisited:  item.companiesVisited,
       studentsInCampus:  item.studentsInCampus,
@@ -154,16 +162,11 @@ export default function DeptPlacementsPage() {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}
         title={editItem ? 'Edit Placement Record' : 'Add Placement Record'} size="lg">
         <div className="space-y-4">
-          <FormField label="Title">
-            <input className="input-field" value={form.title}
-              onChange={e => set('title', e.target.value)}
-              placeholder="Students Placed in Various IT Companies" />
-          </FormField>
-
           <FormField label="Academic Year" required>
-            <input className="input-field" value={form.academicYear}
-              onChange={e => set('academicYear', e.target.value)}
-              placeholder="e.g. 2025-26" />
+            <select className="input-field" value={form.academicYear}
+              onChange={e => set('academicYear', e.target.value)}>
+              {ACADEMIC_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">

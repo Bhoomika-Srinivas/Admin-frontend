@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { Plus, Edit2, Trash2, Pencil, Calendar, Activity, Info } from 'lucide-react'
+import { Plus, Edit2, Trash2, Pencil, Calendar, Activity, Info, Paperclip, X, Upload } from 'lucide-react'
 import {
   forumSectionService, forumEventService, departmentActivityService,
 } from '@/app-modules/departments/api/deptActivitiesApi'
@@ -10,6 +10,7 @@ import Modal, { ModalFooter } from '@/shared/components/common/Modal'
 import FormField from '@/shared/components/forms/FormField'
 import ConfirmDialog from '@/shared/components/common/ConfirmDialog'
 import { useConfirmDialog } from '@/shared/hooks/useConfirmDialog'
+import { uploadToS3 } from '@/shared/utils/s3Upload'
 import clsx from 'clsx'
 
 // ── Shared colour palette (same as Achievements) ──────────────────────────────
@@ -27,6 +28,55 @@ const CARD_COLORS = [
 
 const TABS = ['Forum Activities', 'Department Activities'] as const
 type Tab = typeof TABS[number]
+
+// ── Attachment Uploader ────────────────────────────────────────────────────────
+
+function AttachmentUploader({
+  value, fileName, onChange, onClear, deptId,
+}: {
+  value: string
+  fileName: string
+  onChange: (url: string, name: string) => void
+  onClear: () => void
+  deptId: string
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const toast = useToast()
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const url = await uploadToS3(file, 'dept-activities', deptId)
+      onChange(url, file.name)
+    } catch {
+      toast.error('Upload failed')
+    }
+  }
+
+  if (value) {
+    return (
+      <div className="flex items-center gap-2 p-3 border border-emerald-200 bg-emerald-50 rounded-lg">
+        <Paperclip size={14} className="text-emerald-600 shrink-0" />
+        <span className="text-sm text-emerald-700 flex-1 truncate font-medium">{fileName || 'Attachment'}</span>
+        <button type="button" onClick={onClear} className="text-slate-400 hover:text-red-500 shrink-0">
+          <X size={14} />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <button type="button" onClick={() => inputRef.current?.click()}
+        className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-slate-200 rounded-lg hover:border-brand-300 hover:bg-brand-50/30 transition-colors text-slate-400 hover:text-brand-600 text-sm">
+        <Upload size={15} />
+        <span>Click to upload PDF or image</span>
+      </button>
+      <input ref={inputRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleFile} />
+    </>
+  )
+}
 
 // ── Forum Info Card ────────────────────────────────────────────────────────────
 
@@ -84,6 +134,12 @@ function ForumEventCard({
       <div className="flex-1 p-4 space-y-2">
         <p className="font-semibold text-sm text-slate-800 leading-tight">{event.title}</p>
         <p className="text-xs text-slate-500 leading-relaxed">{event.description}</p>
+        {event.attachmentUrl && (
+          <a href={event.attachmentUrl} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-brand-600 hover:underline">
+            <Paperclip size={11} /> Attachment
+          </a>
+        )}
       </div>
       <div className="flex items-center gap-1 px-3 py-2 border-t border-slate-100">
         <button onClick={() => onEdit(event)}
@@ -142,7 +198,7 @@ function ForumTab({ deptId }: { deptId: string }) {
 
   const [eventModal, setEventModal] = useState(false)
   const [editEvent, setEditEvent]   = useState<ForumEvent | null>(null)
-  const [eventForm, setEventForm]   = useState({ title: '', description: '' })
+  const [eventForm, setEventForm]   = useState({ title: '', description: '', attachmentUrl: '', attachmentFileName: '' })
   const deleteDialog = useConfirmDialog()
 
   useEffect(() => {
@@ -184,20 +240,29 @@ function ForumTab({ deptId }: { deptId: string }) {
   }
 
   function openAddEvent() {
-    setEditEvent(null); setEventForm({ title: '', description: '' }); setEventModal(true)
+    setEditEvent(null)
+    setEventForm({ title: '', description: '', attachmentUrl: '', attachmentFileName: '' })
+    setEventModal(true)
   }
   function openEditEvent(e: ForumEvent) {
-    setEditEvent(e); setEventForm({ title: e.title, description: e.description }); setEventModal(true)
+    setEditEvent(e)
+    setEventForm({ title: e.title, description: e.description, attachmentUrl: e.attachmentUrl ?? '', attachmentFileName: e.attachmentUrl ? 'Attachment' : '' })
+    setEventModal(true)
   }
 
   async function saveEvent() {
     if (!eventForm.title.trim()) { toast.error('Event name is required'); return }
+    const payload = {
+      title:         eventForm.title.trim(),
+      description:   eventForm.description.trim(),
+      ...(eventForm.attachmentUrl ? { attachmentUrl: eventForm.attachmentUrl } : {}),
+    }
     try {
       if (editEvent) {
-        await forumEventService.update(editEvent.id, { title: eventForm.title.trim(), description: eventForm.description.trim() })
+        await forumEventService.update(editEvent.id, payload)
         toast.success('Event updated')
       } else {
-        await forumEventService.create({ deptId, title: eventForm.title.trim(), description: eventForm.description.trim(), createdAt: new Date().toISOString() })
+        await forumEventService.create({ deptId, ...payload, createdAt: new Date().toISOString() })
         toast.success('Event added')
       }
       await reloadEvents(); setEventModal(false)
@@ -281,6 +346,15 @@ function ForumTab({ deptId }: { deptId: string }) {
             <textarea className="input-field resize-none" rows={4}
               placeholder="e.g. Binary Blooms Coding Club conducted Code Quest 2.0, an inter-collegiate coding competition on 30th October 2025."
               value={eventForm.description} onChange={e => setEventForm(f => ({ ...f, description: e.target.value }))} />
+          </FormField>
+          <FormField label="Attachment (PDF or Image)">
+            <AttachmentUploader
+              value={eventForm.attachmentUrl}
+              fileName={eventForm.attachmentFileName}
+              deptId={deptId}
+              onChange={(url, name) => setEventForm(f => ({ ...f, attachmentUrl: url, attachmentFileName: name }))}
+              onClear={() => setEventForm(f => ({ ...f, attachmentUrl: '', attachmentFileName: '' }))}
+            />
           </FormField>
         </div>
         <ModalFooter>

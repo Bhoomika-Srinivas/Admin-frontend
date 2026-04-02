@@ -70,7 +70,8 @@ export const CREATE_DEPT_BATCH = /* GraphQL */ `
     createDeptBatch(input: $input) {
       deptBatchId
       deptId
-      programId
+      programType
+      program
       name
       startYear
       endYear
@@ -93,6 +94,9 @@ export const CREATE_DEPT_COURSE = /* GraphQL */ `
     createDeptCourse(input: $input) {
       deptCourseId
       deptId
+      programType
+      program
+      batch
       code
       name
       semester
@@ -108,6 +112,9 @@ export const UPDATE_DEPT_COURSE = /* GraphQL */ `
     updateDeptCourse(input: $input) {
       deptCourseId
       deptId
+      programType
+      program
+      batch
       code
       name
       semester
@@ -211,12 +218,13 @@ export const CREATE_INNOVATIVE_TEACHING = /* GraphQL */ `
     createInnovativeTeaching(input: $input) {
       innovativeTeachingId
       deptId
-      facultyName
-      method
+      faculties {
+        facultyId
+        facultyName
+      }
       description
-      courseApplied
-      year
-      outcome
+      imageUrls
+      pdfUrl
     }
   }
 `
@@ -226,12 +234,13 @@ export const UPDATE_INNOVATIVE_TEACHING = /* GraphQL */ `
     updateInnovativeTeaching(input: $input) {
       innovativeTeachingId
       deptId
-      facultyName
-      method
+      faculties {
+        facultyId
+        facultyName
+      }
       description
-      courseApplied
-      year
-      outcome
+      imageUrls
+      pdfUrl
     }
   }
 `

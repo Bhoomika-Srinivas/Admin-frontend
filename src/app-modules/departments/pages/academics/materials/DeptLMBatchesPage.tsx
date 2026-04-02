@@ -17,7 +17,7 @@ export default function DeptLMBatchesPage() {
   const base     = `/departments/${deptId}/academics/materials/${programId}/${semester}`
 
   const { data: batches } = useDepartmentSectionAsync(
-    () => deptBatchService.getAll(deptId!, programId!)
+    () => deptBatchService.getAll(deptId!)
   )
 
   const columns: Column<DeptBatch>[] = [
