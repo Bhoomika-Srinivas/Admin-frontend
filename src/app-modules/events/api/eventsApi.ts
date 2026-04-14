@@ -11,8 +11,13 @@ import {
 interface BackendEvent {
   eventId: string
   title: string
-  date: string
-  time: string
+  isMultiDay?: boolean
+  date?: string
+  time?: string
+  startDate?: string
+  startTime?: string
+  endDate?: string
+  endTime?: string
   venue: string
   description: string
   images?: string[]
@@ -29,8 +34,13 @@ function mapEvent(raw: BackendEvent): Event {
   return {
     id:             raw.eventId,
     title:          raw.title,
-    date:           raw.date,
+    isMultiDay:     raw.isMultiDay ?? false,
+    date:           raw.date ?? '',
     time:           raw.time ?? '',
+    startDate:      raw.startDate ?? '',
+    startTime:      raw.startTime ?? '',
+    endDate:        raw.endDate ?? '',
+    endTime:        raw.endTime ?? '',
     venue:          raw.venue ?? '',
     description:    raw.description ?? '',
     images:         raw.images ?? [],
@@ -75,8 +85,13 @@ export const eventService = {
     const data = await gqlRequest<{ createEvent: BackendEvent }>(CREATE_EVENT, {
       input: {
         title:       input.title,
-        date:        input.date,
-        time:        input.time,
+        isMultiDay:  input.isMultiDay,
+        date:        input.isMultiDay ? null : input.date,
+        time:        input.isMultiDay ? null : input.time,
+        startDate:   input.isMultiDay ? input.startDate : null,
+        startTime:   input.isMultiDay ? input.startTime : null,
+        endDate:     input.isMultiDay ? input.endDate   : null,
+        endTime:     input.isMultiDay ? input.endTime   : null,
         venue:       input.venue,
         description: input.description,
         images:      input.images,
@@ -93,8 +108,13 @@ export const eventService = {
       input: {
         eventId:     id,
         title:       input.title,
-        date:        input.date,
-        time:        input.time,
+        isMultiDay:  input.isMultiDay,
+        date:        input.isMultiDay ? null : input.date,
+        time:        input.isMultiDay ? null : input.time,
+        startDate:   input.isMultiDay ? input.startDate : null,
+        startTime:   input.isMultiDay ? input.startTime : null,
+        endDate:     input.isMultiDay ? input.endDate   : null,
+        endTime:     input.isMultiDay ? input.endTime   : null,
         venue:       input.venue,
         description: input.description,
         images:      input.images,

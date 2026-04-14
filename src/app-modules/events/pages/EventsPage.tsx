@@ -42,16 +42,18 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'latest',    label: 'Latest Added' },
 ]
 
+function eventSortDate(e: Event) { return e.isMultiDay ? (e.startDate || '') : e.date }
+
 function applySort(list: Event[], key: SortKey): Event[] {
   const copy = [...list]
   switch (key) {
     case 'pinned':
       return copy.sort((a, b) => {
         if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
-        return a.date.localeCompare(b.date)
+        return eventSortDate(a).localeCompare(eventSortDate(b))
       })
-    case 'date_asc':  return copy.sort((a, b) => a.date.localeCompare(b.date))
-    case 'date_desc': return copy.sort((a, b) => b.date.localeCompare(a.date))
+    case 'date_asc':  return copy.sort((a, b) => eventSortDate(a).localeCompare(eventSortDate(b)))
+    case 'date_desc': return copy.sort((a, b) => eventSortDate(b).localeCompare(eventSortDate(a)))
     case 'latest':    return copy.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   }
 }
@@ -59,28 +61,37 @@ function applySort(list: Event[], key: SortKey): Event[] {
 // ── Add Institutional Event Modal ─────────────────────────────────────────────
 
 type AddForm = {
-  title: string; date: string; time: string; venue: string
-  description: string; images: string[]; pinned: boolean
+  title: string; isMultiDay: boolean
+  date: string; time: string
+  startDate: string; startTime: string; endDate: string; endTime: string
+  venue: string; description: string; images: string[]; pinned: boolean
 }
+const blankAddForm = (): AddForm => ({
+  title: '', isMultiDay: false, date: '', time: '',
+  startDate: '', startTime: '', endDate: '', endTime: '',
+  venue: '', description: '', images: [], pinned: false,
+})
 
 function AddInstitutionalModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const { user } = useAuth()
   const toast = useToast()
   const { errors, setErrors, clearErrors } = useFormErrors(EventSchema)
-  const blank = (): AddForm => ({ title: '', date: '', time: '', venue: '', description: '', images: [], pinned: false })
-  const [form, setForm] = useState<AddForm>(blank)
+  const [form, setForm] = useState<AddForm>(blankAddForm)
 
   if (!open) return null
 
   async function handleSave() {
     const parsed = EventSchema.safeParse(form)
     if (!parsed.success) { setErrors(parsed.error.flatten().fieldErrors as Record<string, string[]>); return }
+    if (!form.isMultiDay && !form.date) { setErrors({ ...errors, date: ['Date is required'] }); return }
+    if (!form.isMultiDay && !form.time) { setErrors({ ...errors, time: ['Time is required'] }); return }
+    if (form.isMultiDay && !form.startDate) { setErrors({ ...errors, startDate: ['Start date is required'] }); return }
+    if (form.isMultiDay && !form.endDate) { setErrors({ ...errors, endDate: ['End date is required'] }); return }
     clearErrors()
     await eventService.create({ ...form, level: 'institutional', department: '', createdBy: user.id })
     toast.success('Event created')
-    setForm(blank())
-    onCreated()
-    onClose()
+    setForm(blankAddForm())
+    onCreated(); onClose()
   }
 
   return (
@@ -90,16 +101,43 @@ function AddInstitutionalModal({ open, onClose, onCreated }: { open: boolean; on
           <input className="input-field" value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Event title" />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Date" required error={errors.date?.[0]}>
-            <input type="date" className="input-field" value={form.date}
-              onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-          </FormField>
-          <FormField label="Time" required error={errors.time?.[0]}>
-            <input type="time" className="input-field" value={form.time}
-              onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
-          </FormField>
-        </div>
+        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" checked={form.isMultiDay}
+            onChange={e => setForm(f => ({ ...f, isMultiDay: e.target.checked }))}
+            className="w-4 h-4 rounded border-slate-300 accent-brand-600" />
+          <span className="text-sm font-medium text-slate-700">Multi-day event</span>
+        </label>
+        {!form.isMultiDay ? (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Date" required error={(errors as Record<string, string[]>).date?.[0]}>
+              <input type="date" className="input-field" value={form.date}
+                onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+            </FormField>
+            <FormField label="Time" required error={(errors as Record<string, string[]>).time?.[0]}>
+              <input type="time" className="input-field" value={form.time}
+                onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+            </FormField>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Start Date" required error={(errors as Record<string, string[]>).startDate?.[0]}>
+              <input type="date" className="input-field" value={form.startDate}
+                onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+            </FormField>
+            <FormField label="Start Time">
+              <input type="time" className="input-field" value={form.startTime}
+                onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} />
+            </FormField>
+            <FormField label="End Date" required error={(errors as Record<string, string[]>).endDate?.[0]}>
+              <input type="date" className="input-field" value={form.endDate}
+                onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
+            </FormField>
+            <FormField label="End Time">
+              <input type="time" className="input-field" value={form.endTime}
+                onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} />
+            </FormField>
+          </div>
+        )}
         <FormField label="Venue" required error={errors.venue?.[0]}>
           <input className="input-field" value={form.venue}
             onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} placeholder="Location or hall name" />
@@ -134,10 +172,7 @@ function AddDeptEventModal({ open, onClose, onCreated }: { open: boolean; onClos
   const { errors, setErrors, clearErrors } = useFormErrors(EventSchema)
   const { departments: allDepts } = useDepartments()
 
-  const blank = (): DeptAddForm => ({
-    title: '', date: '', time: '', venue: '', description: '',
-    images: [], pinned: false, department: '',
-  })
+  const blank = (): DeptAddForm => ({ ...blankAddForm(), department: '' })
   const [form, setForm] = useState<DeptAddForm>(blank)
 
   if (!open) return null
@@ -146,12 +181,14 @@ function AddDeptEventModal({ open, onClose, onCreated }: { open: boolean; onClos
     const parsed = EventSchema.safeParse(form)
     if (!parsed.success) { setErrors(parsed.error.flatten().fieldErrors as Record<string, string[]>); return }
     if (!form.department) { setErrors({ ...errors, department: ['Please select a department'] }); return }
+    if (!form.isMultiDay && !form.date) { setErrors({ ...errors, date: ['Date is required'] }); return }
+    if (!form.isMultiDay && !form.time) { setErrors({ ...errors, time: ['Time is required'] }); return }
+    if (form.isMultiDay && !form.startDate) { setErrors({ ...errors, startDate: ['Start date is required'] }); return }
+    if (form.isMultiDay && !form.endDate) { setErrors({ ...errors, endDate: ['End date is required'] }); return }
     clearErrors()
     await eventService.create({ ...form, level: 'department', createdBy: user.id })
     toast.success('Department event created')
-    setForm(blank())
-    onCreated()
-    onClose()
+    setForm(blank()); onCreated(); onClose()
   }
 
   return (
@@ -170,16 +207,43 @@ function AddDeptEventModal({ open, onClose, onCreated }: { open: boolean; onClos
           <input className="input-field" value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Event title" />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Date" required error={errors.date?.[0]}>
-            <input type="date" className="input-field" value={form.date}
-              onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-          </FormField>
-          <FormField label="Time" required error={errors.time?.[0]}>
-            <input type="time" className="input-field" value={form.time}
-              onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
-          </FormField>
-        </div>
+        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" checked={form.isMultiDay}
+            onChange={e => setForm(f => ({ ...f, isMultiDay: e.target.checked }))}
+            className="w-4 h-4 rounded border-slate-300 accent-brand-600" />
+          <span className="text-sm font-medium text-slate-700">Multi-day event</span>
+        </label>
+        {!form.isMultiDay ? (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Date" required error={(errors as Record<string, string[]>).date?.[0]}>
+              <input type="date" className="input-field" value={form.date}
+                onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+            </FormField>
+            <FormField label="Time" required error={(errors as Record<string, string[]>).time?.[0]}>
+              <input type="time" className="input-field" value={form.time}
+                onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+            </FormField>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Start Date" required error={(errors as Record<string, string[]>).startDate?.[0]}>
+              <input type="date" className="input-field" value={form.startDate}
+                onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+            </FormField>
+            <FormField label="Start Time">
+              <input type="time" className="input-field" value={form.startTime}
+                onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} />
+            </FormField>
+            <FormField label="End Date" required error={(errors as Record<string, string[]>).endDate?.[0]}>
+              <input type="date" className="input-field" value={form.endDate}
+                onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
+            </FormField>
+            <FormField label="End Time">
+              <input type="time" className="input-field" value={form.endTime}
+                onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} />
+            </FormField>
+          </div>
+        )}
         <FormField label="Venue" required error={errors.venue?.[0]}>
           <input className="input-field" value={form.venue}
             onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} placeholder="Location or hall name" />
@@ -371,8 +435,8 @@ function InstitutionalView({
         </div>
       ),
     },
-    { key: 'date',  header: 'Date',  render: row => <span className="text-sm">{row.date}</span> },
-    { key: 'time',  header: 'Time',  render: row => <span className="text-sm">{row.time}</span> },
+    { key: 'date', header: 'Date', render: row => <span className="text-sm">{row.isMultiDay ? `${row.startDate} → ${row.endDate}` : row.date}</span> },
+    { key: 'time', header: 'Time', render: row => <span className="text-sm">{row.isMultiDay ? `${row.startTime} – ${row.endTime}` : row.time}</span> },
     { key: 'venue', header: 'Venue', render: row => <span className="text-sm text-slate-600 line-clamp-1">{row.venue}</span> },
     { key: 'status', header: 'Status', render: row => <StatusBadge status={row.status} /> },
   ]
@@ -525,7 +589,7 @@ function DeptModerationView({
         </div>
       ),
     },
-    { key: 'date',  header: 'Date',  render: row => <span className="text-sm">{row.date}</span> },
+    { key: 'date', header: 'Date', render: row => <span className="text-sm">{row.isMultiDay ? `${row.startDate} → ${row.endDate}` : row.date}</span> },
     { key: 'venue', header: 'Venue', render: row => <span className="text-sm text-slate-600 line-clamp-1">{row.venue}</span> },
     { key: 'status',         header: 'Status',   render: row => <StatusBadge status={row.status} /> },
     { key: 'approvalStatus', header: 'Approval', render: row => <ApprovalBadge status={row.approvalStatus} /> },

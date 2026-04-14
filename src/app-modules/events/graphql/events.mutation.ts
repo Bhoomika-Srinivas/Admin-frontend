@@ -1,8 +1,13 @@
 const EVENT_FIELDS = `
   eventId
   title
+  isMultiDay
   date
   time
+  startDate
+  startTime
+  endDate
+  endTime
   venue
   description
   images

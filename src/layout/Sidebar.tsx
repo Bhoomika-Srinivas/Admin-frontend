@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Newspaper, Building2, Users,
   BookOpen, GraduationCap, Briefcase, Users2, Award,
-  Settings, ChevronDown, X, Building, Bell, ShieldCheck
+  Settings, ChevronDown, X, Building, Bell, ShieldCheck, Medal
 } from 'lucide-react'
 import { useState } from 'react'
 import clsx from 'clsx'
@@ -45,14 +45,7 @@ const navItems: NavItem[] = [
       { label: 'Results',        to: '/academics/results',  permission: 'manage:all_departments' },
     ]
   },
-  {
-    label: 'Admissions', icon: GraduationCap,
-    permission: 'manage:all_departments',
-    children: [
-      { label: 'Applications', to: '/admissions/applications' },
-      { label: 'Students',     to: '/admissions/students' },
-    ]
-  },
+  { label: 'Admissions', icon: GraduationCap, to: '/admissions', permission: 'manage:all_departments' },
   { label: 'Placements',  icon: Briefcase, to: '/placements', permission: 'manage:placements' },
   {
     label: 'Campus Life', icon: Building,
@@ -71,7 +64,8 @@ const navItems: NavItem[] = [
       { label: 'Hostel',  to: '/facilities/hostel' },
     ]
   },
-  { label: 'Alumni',        icon: Award,        to: '/alumni',         permission: 'manage:alumni' },
+  { label: 'Accreditation / Ranking', icon: Medal, to: '/accreditations', permission: 'manage:all_departments' },
+  { label: 'Alumni', icon: Award, to: '/alumni', permission: 'manage:alumni' },
   { label: 'Users',         icon: Users,        to: '/users',          permission: 'manage:users' },
   { label: 'Notifications', icon: Bell,         to: '/notifications' },
   { label: 'Audit Logs',    icon: ShieldCheck,  to: '/audit-logs',     permission: 'manage:users' },

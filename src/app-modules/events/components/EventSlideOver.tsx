@@ -140,11 +140,19 @@ export default function EventSlideOver({ event: initialEvent, onClose, onSaved, 
 
               {/* Details */}
               <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-slate-600">
+                <div className="flex items-center gap-2 text-slate-600 flex-wrap">
                   <Calendar size={14} className="text-slate-400 shrink-0" />
-                  <span>{event.date}</span>
-                  <Clock size={14} className="text-slate-400 shrink-0 ml-2" />
-                  <span>{event.time}</span>
+                  {event.isMultiDay ? (
+                    <span>{event.startDate} → {event.endDate}</span>
+                  ) : (
+                    <span>{event.date}</span>
+                  )}
+                  {(event.isMultiDay ? (event.startTime || event.endTime) : event.time) && (
+                    <>
+                      <Clock size={14} className="text-slate-400 shrink-0 ml-1" />
+                      <span>{event.isMultiDay ? `${event.startTime} – ${event.endTime}` : event.time}</span>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">
                   <MapPin size={14} className="text-slate-400 shrink-0" />
@@ -184,14 +192,37 @@ export default function EventSlideOver({ event: initialEvent, onClose, onSaved, 
               <FormField label="Title" required error={errors.title?.[0]}>
                 <input className="input-field" value={form.title ?? ''} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
               </FormField>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField label="Date" required error={errors.date?.[0]}>
-                  <input type="date" className="input-field" value={form.date ?? ''} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-                </FormField>
-                <FormField label="Time" required error={errors.time?.[0]}>
-                  <input type="time" className="input-field" value={form.time ?? ''} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
-                </FormField>
-              </div>
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input type="checkbox" checked={form.isMultiDay ?? false}
+                  onChange={e => setForm(f => ({ ...f, isMultiDay: e.target.checked }))}
+                  className="w-4 h-4 rounded border-slate-300 accent-brand-600" />
+                <span className="text-sm font-medium text-slate-700">Multi-day event</span>
+              </label>
+              {!form.isMultiDay ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="Date" required error={(errors as Record<string, string[]>).date?.[0]}>
+                    <input type="date" className="input-field" value={form.date ?? ''} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                  </FormField>
+                  <FormField label="Time" required error={(errors as Record<string, string[]>).time?.[0]}>
+                    <input type="time" className="input-field" value={form.time ?? ''} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+                  </FormField>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="Start Date" required>
+                    <input type="date" className="input-field" value={form.startDate ?? ''} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                  </FormField>
+                  <FormField label="Start Time">
+                    <input type="time" className="input-field" value={form.startTime ?? ''} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} />
+                  </FormField>
+                  <FormField label="End Date" required>
+                    <input type="date" className="input-field" value={form.endDate ?? ''} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
+                  </FormField>
+                  <FormField label="End Time">
+                    <input type="time" className="input-field" value={form.endTime ?? ''} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} />
+                  </FormField>
+                </div>
+              )}
               <FormField label="Venue" required error={errors.venue?.[0]}>
                 <input className="input-field" value={form.venue ?? ''} onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} />
               </FormField>

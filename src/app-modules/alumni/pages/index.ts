@@ -1,0 +1,8 @@
+export { default as AlumniDashboardPage } from './AlumniDashboardPage'
+export { default as AlumniEventsPage } from './AlumniEventsPage'
+export { default as AlumniTimelinePage } from './AlumniTimelinePage'
+export { default as AlumniAboutPage } from './AlumniAboutPage'
+export { default as AlumniCommitteePage } from './AlumniCommitteePage'
+export { default as AlumniDistinguishedPage } from './AlumniDistinguishedPage'
+export { default as AlumniCoordinatorsPage } from './AlumniCoordinatorsPage'
+export { default as AlumniContactPage } from './AlumniContactPage'

@@ -1,2 +1,2 @@
-export * from './pages/AlumniPage'
+export * from './pages'
 export * from './api/alumniApi'
