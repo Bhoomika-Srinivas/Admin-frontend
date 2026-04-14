@@ -1,0 +1,7 @@
+export { default as AccreditationsPage } from './pages/AccreditationsPage'
+export { default as AICTEPage }          from './pages/AICTEPage'
+export { default as VTUPage }            from './pages/VTUPage'
+export { default as NAACPage }           from './pages/NAACPage'
+export { default as NIRFPage }           from './pages/NIRFPage'
+export { default as NBAPage }            from './pages/NBAPage'
+export { default as AISHEPage }          from './pages/AISHEPage'

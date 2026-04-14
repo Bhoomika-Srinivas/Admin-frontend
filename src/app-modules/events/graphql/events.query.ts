@@ -18,8 +18,13 @@ export const LIST_EVENTS = /* GraphQL */ `
       items {
         eventId
         title
+        isMultiDay
         date
         time
+        startDate
+        startTime
+        endDate
+        endTime
         venue
         description
         images
@@ -41,8 +46,13 @@ export const GET_EVENT = /* GraphQL */ `
     getEvent(eventId: $eventId) {
       eventId
       title
+      isMultiDay
       date
       time
+      startDate
+      startTime
+      endDate
+      endTime
       venue
       description
       images

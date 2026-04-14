@@ -66,8 +66,13 @@ export interface News {
 export interface Event {
   id: string
   title: string
+  isMultiDay: boolean
   date: string
   time: string
+  startDate: string
+  startTime: string
+  endDate: string
+  endTime: string
   venue: string
   description: string
   images: string[]
@@ -206,6 +211,104 @@ export interface Alumni {
   linkedin?: string
   image?: string
   createdAt: string
+}
+
+// ─── Alumni Module (Admin Panel) ─────────────────────────────────────────────
+
+export interface AlumniEvent {
+  id: string
+  title: string
+  date: string
+  time: string
+  department: string
+  location: string
+  description?: string
+  image?: string
+  status: 'published' | 'draft'
+  createdAt: string
+}
+
+export interface TimelineEntry {
+  id: string
+  year: string
+  title: string
+  description: string
+  order: number
+  isActive: boolean
+}
+
+export interface AlumniVisionMission {
+  id: string
+  vision: string[]
+  mission: string[]
+  objectives: string[]
+  updatedAt: string
+}
+
+export type CommitteeRole = 'PRESIDENT' | 'SECRETARY' | 'TREASURER' | 'MEMBER'
+
+export interface ExecutiveCommitteeMember {
+  id: string
+  name: string
+  roleType: CommitteeRole
+  designation: string
+  department?: string
+  organization?: string
+  profileImage?: string
+  order: number
+}
+
+export interface DeanMessage {
+  id: string
+  name: string
+  role: string
+  department: string
+  designation: string
+  message: string
+  image?: string
+  isActive: boolean
+}
+
+export type CoordinatorRole = 'DEAN' | 'COORDINATOR'
+
+export interface AlumniCoordinator {
+  id: string
+  name: string
+  roleType: CoordinatorRole
+  department: string
+  email?: string | null
+  isActive: boolean
+}
+
+export interface DistinguishedAlumniEntry {
+  id: string
+  name: string
+  department: string
+  batchYear: number
+  currentRole: string
+  company: string
+  linkedinUrl?: string
+  profileImage?: string
+  isFeatured: boolean
+  isActive: boolean
+}
+
+export interface AlumniRegistration {
+  id: string
+  title: string
+  description: string
+  registrationLink: string
+}
+
+export type AlumniContactRole = 'DEAN_ALUMNI' | 'DEAN_PR'
+
+export interface AlumniContact {
+  id: string
+  name: string
+  roleType: AlumniContactRole
+  department: string
+  designation: string
+  email: string
 }
 
 // ─── Committee ────────────────────────────────────────────────────────────────
@@ -700,6 +803,163 @@ export interface DeptSlot {
   courseName: string
   type: DeptCourse['type']
   facultyId?: string
+}
+
+// ─── Accreditation Records ────────────────────────────────────────────────────
+
+export type AccreditationType = 'AICTE' | 'VTU' | 'NAAC' | 'NIRF' | 'NBA' | 'AISHE'
+
+export interface AccreditationRecord {
+  id: string
+  type: AccreditationType
+  title: string
+  file_url: string
+  section?: string
+  sub_section?: string
+  sub_sub_section?: string
+  department?: string
+  year?: string
+  program?: string
+  cycle?: string
+  description?: string
+  order?: number
+}
+
+// ─── Admissions ───────────────────────────────────────────────────────────────
+
+export interface AdmissionsOverview {
+  headline:    string
+  subheadline: string
+  description: string
+  highlights:  string[]
+  imageUrl:    string
+  bannerUrl:   string
+}
+
+export interface AdmissionsProgram {
+  id:          string
+  level:       string
+  name:        string
+  duration:    string
+  seats:       number
+  description: string
+  eligibility: string
+  order:       number
+}
+
+export interface UGCourse {
+  id:          string
+  name:        string
+  code:        string
+  duration:    string
+  seats:       number
+  description: string
+  order:       number
+}
+
+export interface PGCourse {
+  id:          string
+  name:        string
+  code:        string
+  duration:    string
+  seats:       number
+  description: string
+  order:       number
+}
+
+export interface EligibilityEntry {
+  id:          string
+  title:       string
+  description: string
+  order:       number
+}
+
+export interface AdmissionStep {
+  id:          string
+  order:       number
+  title:       string
+  description: string
+  iconName:    string
+}
+
+export interface ImportantDate {
+  id:          string
+  title:       string   // maps from backend field 'event'
+  date:        string
+  description: string
+  category:    string
+}
+
+export interface Prospectus {
+  title:       string
+  description: string
+  fileName:    string
+  fileUrl:     string
+  uploadedAt:  string
+}
+
+export interface FeeDocument {
+  id:         string
+  title:      string
+  fileName:   string
+  fileUrl:    string
+  uploadedAt: string
+}
+
+export interface Scholarship {
+  id:          string
+  category:    'State' | 'Government of India' | 'Institutional' | 'Others'
+  name:        string
+  description: string
+  amount:      string
+  eligibility: string
+  order:       number
+}
+
+export interface AuditStatement {
+  id:        string
+  year:      string
+  title:     string
+  fileName:  string
+  fileUrl:   string
+  uploadedAt: string
+}
+
+export interface AdmissionsEnquiry {
+  id:        string
+  name:      string
+  email:     string
+  phone:     string
+  category:  string   // maps from backend field 'program'
+  message:   string
+  status:    'New' | 'Contacted' | 'Closed'
+  createdAt: string
+}
+
+export interface AdmissionsContact {
+  id:             string
+  name:           string
+  role:           string
+  email:          string
+  phone:          string
+  officeLocation: string
+}
+
+export interface WhyEnquire {
+  title:  string
+  points: string[]
+}
+
+export interface EnquiryCategory {
+  id:          string
+  title:       string
+  description: string
+}
+
+export interface InfoBlock {
+  id:          string
+  type:        'Phone' | 'Office Hours' | 'Email'
+  description: string
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────

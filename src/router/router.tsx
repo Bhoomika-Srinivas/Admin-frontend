@@ -51,13 +51,24 @@ import SemestersPage from '@/app-modules/courses/pages/SemestersPage'
 import BatchSelectionPage from '@/app-modules/courses/pages/BatchSelectionPage'
 import CoursesListPage from '@/app-modules/courses/pages/CoursesListPage'
 import PlacementsPage from '@/app-modules/placements/pages/PlacementsPage'
-import AlumniPage from '@/app-modules/alumni/pages/AlumniPage'
+import AlumniWorkspaceLayout from '@/app-modules/alumni/layout/AlumniWorkspaceLayout'
+import {
+  AlumniDashboardPage,
+  AlumniEventsPage,
+  AlumniTimelinePage,
+  AlumniAboutPage,
+  AlumniCommitteePage,
+  AlumniDistinguishedPage,
+  AlumniCoordinatorsPage,
+  AlumniContactPage,
+} from '@/app-modules/alumni/pages'
 import UsersPage from '@/core-modules/users/pages/UsersPage'
 import NotificationsPage from '@/core-modules/notifications/pages/NotificationsPage'
 import AuditLogsPage from '@/core-modules/audit/pages/AuditLogsPage'
 import ProfilePage from '@/app-modules/profile/pages/ProfilePage'
 import LoginPage from '@/core-modules/auth/pages/LoginPage'
 import PlaceholderPage from '@/shared/components/common/PlaceholderPage'
+import AdmissionsPage from '@/app-modules/admissions/pages/AdmissionsPage'
 import ProtectedRoute from '@/shared/components/common/ProtectedRoute'
 import AdminProgramsPage from '@/app-modules/departments/pages/academics/admin-courses/AdminProgramsPage'
 import AdminProgramDeptsPage from '@/app-modules/departments/pages/academics/admin-courses/AdminProgramDeptsPage'
@@ -65,6 +76,15 @@ import AdminSemestersPage from '@/app-modules/departments/pages/academics/admin-
 import AdminBatchesPage from '@/app-modules/departments/pages/academics/admin-courses/AdminBatchesPage'
 import AdminCourseListPage from '@/app-modules/departments/pages/academics/admin-courses/AdminCourseListPage'
 import DeptDashboardPage from '@/app-modules/departments/pages/DeptDashboardPage'
+import {
+  AccreditationsPage as AccreditationsIndexPage,
+  AICTEPage,
+  VTUPage,
+  NAACPage,
+  NIRFPage,
+  NBAPage,
+  AISHEPage,
+} from '@/app-modules/accreditations'
 
 // ── Department workspace child routes (shared between the two layouts) ────────
 const deptWorkspaceChildren = [
@@ -128,6 +148,26 @@ export const router = createBrowserRouter([
     children: deptWorkspaceChildren,
   },
 
+  // ── Alumni Workspace — standalone, no admin sidebar ──────────────────────
+  {
+    path: '/alumni',
+    element: (
+      <ProtectedRoute permission="manage:alumni">
+        <AlumniWorkspaceLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <AlumniDashboardPage /> },
+      { path: 'events', element: <AlumniEventsPage /> },
+      { path: 'timeline', element: <AlumniTimelinePage /> },
+      { path: 'about', element: <AlumniAboutPage /> },
+      { path: 'committee', element: <AlumniCommitteePage /> },
+      { path: 'distinguished', element: <AlumniDistinguishedPage /> },
+      { path: 'coordinators', element: <AlumniCoordinatorsPage /> },
+      { path: 'contact', element: <AlumniContactPage /> },
+    ],
+  },
+
   // ── Admin Dashboard — main layout with sidebar ─────────────────────────────
   {
     path: '/',
@@ -175,18 +215,10 @@ export const router = createBrowserRouter([
       },
       // Admissions
       {
-        path: 'admissions/applications',
+        path: 'admissions',
         element: (
           <ProtectedRoute permission="manage:all_departments">
-            <PlaceholderPage title="Applications" description="Review and process admission applications." />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'admissions/students',
-        element: (
-          <ProtectedRoute permission="manage:all_departments">
-            <PlaceholderPage title="Students" description="Manage enrolled student records." />
+            <AdmissionsPage />
           </ProtectedRoute>
         ),
       },
@@ -239,14 +271,6 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'alumni',
-        element: (
-          <ProtectedRoute permission="manage:alumni">
-            <AlumniPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: 'users',
         element: (
           <ProtectedRoute permission="manage:users">
@@ -271,6 +295,14 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      // Accreditation / Ranking
+      { path: 'accreditations',        element: <AccreditationsIndexPage /> },
+      { path: 'accreditations/aicte',  element: <AICTEPage /> },
+      { path: 'accreditations/vtu',    element: <VTUPage /> },
+      { path: 'accreditations/naac',   element: <NAACPage /> },
+      { path: 'accreditations/nirf',   element: <NIRFPage /> },
+      { path: 'accreditations/nba',    element: <NBAPage /> },
+      { path: 'accreditations/aishe',  element: <AISHEPage /> },
       // Catch-all
       { path: '*', element: <Navigate to="/" replace /> },
     ],
