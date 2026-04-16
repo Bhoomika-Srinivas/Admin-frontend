@@ -29,10 +29,14 @@ export const departmentService = {
   },
 
   async getById(departmentId: string): Promise<Department | null> {
-    const data = await gqlRequest<{ getDepartment: Record<string, unknown> | null }>(
-      GET_DEPARTMENT, { departmentId }
-    )
-    return data.getDepartment ? mapDepartment(data.getDepartment) : null
+    try {
+      const data = await gqlRequest<{ getDepartment: Record<string, unknown> | null }>(
+        GET_DEPARTMENT, { departmentId }
+      )
+      return data.getDepartment ? mapDepartment(data.getDepartment) : null
+    } catch {
+      return null
+    }
   },
 
   async create(input: Partial<Department>): Promise<Department> {

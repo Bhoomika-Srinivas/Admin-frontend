@@ -1,6 +1,12 @@
-// src/api/graphqlClient.ts
-// Centralized GraphQL client — all API communication goes through here.
 import { getCurrentToken } from './cognitoClient'
+
+const APPSYNC_URL = import.meta.env.VITE_APPSYNC_URL
+
+if (!APPSYNC_URL) {
+  throw new Error('VITE_APPSYNC_URL environment variable is required')
+}
+
+let isRedirecting = false
 
 export async function gqlRequest<T = unknown>(
   query: string,
@@ -9,12 +15,14 @@ export async function gqlRequest<T = unknown>(
   const token = await getCurrentToken()
 
   if (!token) {
-    // Session expired or not logged in — redirect to login
-    window.location.href = '/login'
+    if (!isRedirecting) {
+      isRedirecting = true
+      window.location.href = '/login'
+    }
     throw new Error('Not authenticated')
   }
 
-  const res = await fetch(import.meta.env.VITE_APPSYNC_URL ?? '', {
+  const res = await fetch(APPSYNC_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -24,7 +32,10 @@ export async function gqlRequest<T = unknown>(
   })
 
   if (res.status === 401) {
-    window.location.href = '/login'
+    if (!isRedirecting) {
+      isRedirecting = true
+      window.location.href = '/login'
+    }
     throw new Error('Session expired')
   }
 

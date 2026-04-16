@@ -6,8 +6,6 @@ import {
   APPROVE_EVENT, REJECT_EVENT, CANCEL_EVENT, TOGGLE_PIN_EVENT,
 } from '../graphql/events.mutation'
 
-// ── Backend shape ──────────────────────────────────────────────────────────────
-
 interface BackendEvent {
   eventId: string
   title: string
@@ -62,22 +60,20 @@ type ListFilter = {
   limit?: number
 }
 
-// ── Service ───────────────────────────────────────────────────────────────────
-
 export const eventService = {
   async getAll(filter: ListFilter = {}): Promise<Event[]> {
     const data = await gqlRequest<{ listEvents: { items: BackendEvent[] } }>(
-      LIST_EVENTS, { ...filter },
+      LIST_EVENTS, { ...filter }
     )
     return (data.listEvents?.items ?? []).map(mapEvent)
   },
 
-  async getById(id: string): Promise<Event | undefined> {
+  async getById(id: string): Promise<Event | null> {
     try {
       const data = await gqlRequest<{ getEvent: BackendEvent }>(GET_EVENT, { eventId: id })
-      return mapEvent(data.getEvent)
+      return data.getEvent ? mapEvent(data.getEvent) : null
     } catch {
-      return undefined
+      return null
     }
   },
 

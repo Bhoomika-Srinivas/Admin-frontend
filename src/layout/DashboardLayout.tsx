@@ -14,12 +14,18 @@ export default function DashboardLayout() {
   // Dept admins live entirely inside their department workspace — redirect them there
   useEffect(() => {
     if (!isAuthenticated || user.role !== 'dept_admin' || !user.department) return
+
+    let cancelled = false
+
     departmentService.getAll().then(depts => {
+      if (cancelled) return
       const dept = depts.find(
         d => d.shortName === user.department || d.id === user.department,
       )
       if (dept) navigate(`/departments/${dept.id}`, { replace: true })
     })
+
+    return () => { cancelled = true }
   }, [isAuthenticated, user.role, user.department, navigate])
 
   if (!isAuthenticated) return <Navigate to="/login" replace />

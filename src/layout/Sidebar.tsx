@@ -1,8 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Newspaper, Building2, Users,
-  BookOpen, GraduationCap, Briefcase, Users2, Award,
-  Settings, ChevronDown, X, Building, Bell, ShieldCheck, Medal
+  BookOpen, GraduationCap, Briefcase, Award,
+  Settings, ChevronDown, X, ShieldCheck, Medal,
+  HelpCircle, Microscope, Info, LayoutGrid, Megaphone,
 } from 'lucide-react'
 import { useState } from 'react'
 import clsx from 'clsx'
@@ -26,50 +27,68 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
+
   {
     label: 'Site Content', icon: Newspaper,
     children: [
-      { label: 'News',    to: '/news',    permission: 'content:create' },
-      { label: 'Events',  to: '/events',  permission: 'content:create' },
-      { label: 'Gallery', to: '/gallery', permission: 'content:create' },
+      { label: 'ERP',           to: '/erp',           permission: 'content:create' },
+      { label: 'News',          to: '/news',           permission: 'content:create' },
+      { label: 'Events',        to: '/events',         permission: 'content:create' },
+      { label: 'Notifications', to: '/notifications' },
     ]
   },
-  { label: 'Departments', icon: Building2, to: '/departments', permission: 'manage:own_department' },
-  { label: 'Committees',  icon: Users2,   to: '/committees',  permission: 'manage:committees' },
+
   {
     label: 'Academics', icon: BookOpen,
     children: [
-      { label: 'Faculty',        to: '/academics/faculty',  permission: 'manage:own_department' },
-      { label: 'Course Catalog', to: '/academics/catalog',  permission: 'manage:all_departments' },
-      { label: 'Courses',        to: '/academics/courses',  permission: 'manage:own_department' },
-      { label: 'Results',        to: '/academics/results',  permission: 'manage:all_departments' },
+      { label: 'Programs',            to: '/academics/programs',        permission: 'manage:own_department' },
+      { label: 'Departments',         to: '/departments',               permission: 'manage:own_department' },
+      { label: 'Scheme & Syllabus',   to: '/academics/scheme-syllabus', permission: 'manage:own_department' },
+      { label: 'Academic Calendar',   to: '/academics/calendar',        permission: 'manage:own_department' },
+      { label: 'Ranks',               to: '/academics/ranks',           permission: 'manage:own_department' },
+      { label: 'Rules & Regulations', to: '/academics/rules',           permission: 'manage:own_department' },
     ]
   },
-  { label: 'Admissions', icon: GraduationCap, to: '/admissions', permission: 'manage:all_departments' },
-  { label: 'Placements',  icon: Briefcase, to: '/placements', permission: 'manage:placements' },
-  {
-    label: 'Campus Life', icon: Building,
-    permission: 'manage:all_departments',
-    children: [
-      { label: 'Clubs',  to: '/campus-life/clubs' },
-      { label: 'Sports', to: '/campus-life/sports' },
-    ]
-  },
+
+  { label: 'Accreditation / Ranking', icon: Medal,         to: '/accreditations', permission: 'manage:all_departments' },
+  { label: 'Admissions',              icon: GraduationCap, to: '/admissions',     permission: 'manage:all_departments' },
+  { label: 'Alumni',                  icon: Award,         to: '/alumni',         permission: 'manage:alumni' },
+
   {
     label: 'Facilities', icon: Building2,
-    permission: 'manage:all_departments',
     children: [
-      { label: 'Labs',    to: '/facilities/labs' },
-      { label: 'Library', to: '/facilities/library' },
-      { label: 'Hostel',  to: '/facilities/hostel' },
+      { label: 'Campus Life',  to: '/campus-life' },
+      { label: 'Campus Tour',  to: '/facilities/campus-tour' },
+      { label: 'Library',      to: '/facilities/library' },
+      { label: 'Hostel',       to: '/facilities/hostel' },
     ]
   },
-  { label: 'Accreditation / Ranking', icon: Medal, to: '/accreditations', permission: 'manage:all_departments' },
-  { label: 'Alumni', icon: Award, to: '/alumni', permission: 'manage:alumni' },
-  { label: 'Users',         icon: Users,        to: '/users',          permission: 'manage:users' },
-  { label: 'Notifications', icon: Bell,         to: '/notifications' },
-  { label: 'Audit Logs',    icon: ShieldCheck,  to: '/audit-logs',     permission: 'manage:users' },
-  { label: 'Settings',      icon: Settings,     to: '/settings',       permission: 'manage:all_departments' },
+
+  {
+    label: 'Placements', icon: Briefcase, permission: 'manage:placements',
+    children: [
+      { label: 'Training',  to: '/placements/training' },
+      { label: 'Placement', to: '/placements' },
+    ]
+  },
+
+  { label: 'Research', icon: Microscope,  to: '/research' },
+  { label: 'About',    icon: Info,        to: '/about' },
+  { label: 'Cells',    icon: LayoutGrid,  to: '/cells' },
+
+  {
+    label: 'Help', icon: HelpCircle,
+    children: [
+      { label: 'Feedback',  to: '/help/feedback' },
+      { label: 'Grievance', to: '/help/grievance' },
+      { label: 'Contact',   to: '/help/contact' },
+    ]
+  },
+
+  { label: 'Announcements', icon: Megaphone,  to: '/announcements', permission: 'manage:all_departments' },
+  { label: 'Users',         icon: Users,      to: '/users',         permission: 'manage:users' },
+  { label: 'Audit Logs',    icon: ShieldCheck, to: '/audit-logs',   permission: 'manage:users' },
+  { label: 'Settings',      icon: Settings,   to: '/settings',      permission: 'manage:all_departments' },
 ]
 
 interface SidebarProps {
@@ -125,16 +144,12 @@ function SidebarGroup({ item, visibleChildren }: { item: NavItem; visibleChildre
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { user } = useAuth()
 
-  // Filter nav items based on the current user's permissions.
   const visibleItems = navItems.flatMap(item => {
-    // Items with a direct route
     if (item.to) {
       if (!item.permission || can(user, item.permission)) return [item]
       return []
     }
-    // Group items — filter children first
     if (item.children) {
-      // If the group itself has a permission gate, check it first
       if (item.permission && !can(user, item.permission)) return []
       const visibleChildren = item.children.filter(
         child => !child.permission || can(user, child.permission)
