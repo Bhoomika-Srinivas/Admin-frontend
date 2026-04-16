@@ -25,11 +25,12 @@ function sessionToUser(session: import('amazon-cognito-identity-js').CognitoUser
     const roles = JSON.parse(payload['custom:roles'] as string) as string[]
     const first = roles[0]
     const roleMap: Record<string, UserRole> = {
-      super_admin: 'super_admin',
-      dept_admin:  'dept_admin',
-      admin:       'super_admin',   // backend "admin" → frontend super_admin
-      editor:      'editor',
-      viewer:      'viewer',
+      super_admin:  'super_admin',
+      dept_admin:   'dept_admin',
+      'dept-admin': 'dept_admin',   // backend uses hyphen variant
+      admin:        'super_admin',  // backend "admin" → frontend super_admin
+      editor:       'editor',
+      viewer:       'viewer',
     }
     role = roleMap[first] ?? 'viewer'
   } catch { /* leave as viewer */ }
