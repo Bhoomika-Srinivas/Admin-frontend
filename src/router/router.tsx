@@ -1,3 +1,4 @@
+
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import DashboardLayout from '@/layout/DashboardLayout'
 import DepartmentWorkspaceLayout from '@/layout/DepartmentWorkspaceLayout'
@@ -132,6 +133,8 @@ const deptWorkspaceChildren = [
   { path: 'activities/gallery',      element: <PhotoGalleryPage /> },
   // Settings
   { path: 'settings/branding', element: <BrandingPage /> },
+  // Audit Logs (dept-scoped)
+  { path: 'audit-logs', element: <AuditLogsPage /> },
 ]
 
 export const router = createBrowserRouter([

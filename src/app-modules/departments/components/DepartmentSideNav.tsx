@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
-import { ChevronDown, ChevronRight, Building2, Users, BookOpen, GraduationCap, Microscope, Settings2, LayoutDashboard } from 'lucide-react'
+import { ChevronDown, ChevronRight, Building2, Users, BookOpen, GraduationCap, Microscope, Settings2, LayoutDashboard, ShieldCheck } from 'lucide-react'
 import clsx from 'clsx'
 
 type NavLeaf = { label: string; path: string }
@@ -128,6 +128,22 @@ export default function DepartmentSideNav() {
         Dashboard
       </NavLink>
       {groups.map(g => <NavSection key={g.label} group={g} />)}
+
+      {/* Audit Logs */}
+      <NavLink
+        to={`/departments/${deptId}/audit-logs`}
+        className={({ isActive }) =>
+          clsx(
+            'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors mt-1',
+            isActive
+              ? 'bg-brand-50 text-brand-700 font-semibold'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800',
+          )
+        }
+      >
+        <ShieldCheck size={15} className="shrink-0" />
+        Audit Logs
+      </NavLink>
     </nav>
   )
 }

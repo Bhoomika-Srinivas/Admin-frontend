@@ -29,6 +29,7 @@ export default function DashboardLayout() {
   }, [isAuthenticated, user.role, user.department, navigate])
 
   if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user.role === 'dept_admin') return <Navigate to="/departments" replace />
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
