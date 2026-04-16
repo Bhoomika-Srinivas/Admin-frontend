@@ -17,7 +17,7 @@ export default function DashboardLayout() {
 
     let cancelled = false
 
-    departmentService.getAll().then(depts => {
+    departmentService.getAll(user.tenantId ?? '').then(depts => {
       if (cancelled) return
       const dept = depts.find(
         d => d.shortName === user.department || d.id === user.department,

@@ -21,9 +21,9 @@ function mapDepartment(raw: Record<string, unknown>): Department {
 }
 
 export const departmentService = {
-  async getAll(): Promise<Department[]> {
+  async getAll(tenantId: string): Promise<Department[]> {
     const data = await gqlRequest<{ listDepartments: { items: Record<string, unknown>[] } }>(
-      LIST_DEPARTMENTS, { limit: 100 }
+      LIST_DEPARTMENTS, { tenantId, limit: 100 }
     )
     return (data.listDepartments.items ?? []).map(mapDepartment)
   },

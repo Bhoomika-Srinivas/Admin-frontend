@@ -24,8 +24,8 @@ export const GET_DEPARTMENT = `
 `
 
 export const LIST_DEPARTMENTS = `
-  query ListDepartments($limit: Int, $nextToken: String) {
-    listDepartments(limit: $limit, nextToken: $nextToken) {
+  query ListDepartments($tenantId: ID!, $limit: Int, $nextToken: String) {
+    listDepartments(tenantId: $tenantId, limit: $limit, nextToken: $nextToken) {
       items {
         ${DEPARTMENT_FIELDS}
       }

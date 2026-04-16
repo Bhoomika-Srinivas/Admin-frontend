@@ -25,6 +25,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
+  tenantId?: string
   department?: string
   avatar?: string
   status: 'active' | 'inactive'

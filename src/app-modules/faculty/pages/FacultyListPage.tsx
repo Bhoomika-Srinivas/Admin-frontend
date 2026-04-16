@@ -60,7 +60,7 @@ export default function FacultyListPage() {
   const deleteDialog = useConfirmDialog()
 
   useEffect(() => {
-    departmentService.getAll().then(setDepartments).catch(() => setDepartments([]))
+    departmentService.getAll(user.tenantId ?? '').then(setDepartments).catch(() => setDepartments([]))
     facultyService.getDesignationOptions()
       .then(items => setDesignationOptions(items.map(d => ({ value: d, label: d }))))
       .catch(() => setDesignationOptions([]))

@@ -39,7 +39,8 @@ function sessionToUser(session: import('amazon-cognito-identity-js').CognitoUser
     name: (payload['name'] as string) ?? (payload['email'] as string).split('@')[0],
     email: payload['email'] as string,
     role,
-    department: (payload['custom:department'] ?? payload['custom:tenant_id']) as string | undefined,
+    tenantId: (payload['custom:tenant_id'] as string) ?? undefined,
+    department: (payload['custom:department'] as string) ?? undefined,
     status: 'active',
     createdAt: new Date((payload['auth_time'] as number) * 1000).toISOString(),
   }
