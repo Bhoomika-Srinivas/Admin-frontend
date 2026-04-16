@@ -19,8 +19,9 @@ export default function DashboardLayout() {
 
     departmentService.getAll(user.tenantId ?? '').then(depts => {
       if (cancelled) return
+      const userDept = user.department?.toLowerCase()
       const dept = depts.find(
-        d => d.shortName === user.department || d.id === user.department,
+        d => d.shortName.toLowerCase() === userDept || d.id.toLowerCase() === userDept,
       )
       if (dept) navigate(`/departments/${dept.id}`, { replace: true })
     })

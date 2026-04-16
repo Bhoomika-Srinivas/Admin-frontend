@@ -48,9 +48,13 @@ export default function DepartmentsPage() {
   const { searchTerm, setSearchTerm, debouncedSearch } = useSearch()
   const deleteDialog = useConfirmDialog()
 
+  const userDept = user.department?.toLowerCase()
   const sourceData = superAdmin
     ? allDepartments
-    : allDepartments.filter(d => d.shortName === user.department || d.id === user.department)
+    : allDepartments.filter(d =>
+        d.shortName.toLowerCase() === userDept ||
+        d.id.toLowerCase() === userDept
+      )
 
   // dept_admin always goes straight to their workspace
   useEffect(() => {
