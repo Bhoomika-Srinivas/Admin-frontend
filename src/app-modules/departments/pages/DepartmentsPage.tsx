@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Edit2, Trash2, Users, BookOpen } from 'lucide-react'
 import { departmentService } from '@/app-modules/departments/api/departmentsApi'
@@ -50,7 +50,14 @@ export default function DepartmentsPage() {
 
   const sourceData = superAdmin
     ? allDepartments
-    : allDepartments.filter(d => d.shortName === user.department)
+    : allDepartments.filter(d => d.shortName === user.department || d.id === user.department)
+
+  // dept_admin always goes straight to their workspace
+  useEffect(() => {
+    if (!superAdmin && !loading && sourceData.length === 1) {
+      navigate(`/departments/${sourceData[0].id}`, { replace: true })
+    }
+  }, [superAdmin, loading, sourceData, navigate])
 
   const filtered = useMemo(() => sourceData.filter(d => {
     const q = debouncedSearch.toLowerCase()
