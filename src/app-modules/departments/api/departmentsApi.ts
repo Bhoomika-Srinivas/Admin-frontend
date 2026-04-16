@@ -28,10 +28,10 @@ export const departmentService = {
     return (data.listDepartments.items ?? []).map(mapDepartment)
   },
 
-  async getById(departmentId: string): Promise<Department | null> {
+  async getById(departmentId: string, tenantId: string): Promise<Department | null> {
     try {
       const data = await gqlRequest<{ getDepartment: Record<string, unknown> | null }>(
-        GET_DEPARTMENT, { departmentId }
+        GET_DEPARTMENT, { tenantId, departmentId }
       )
       return data.getDepartment ? mapDepartment(data.getDepartment) : null
     } catch {

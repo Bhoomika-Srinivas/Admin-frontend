@@ -16,8 +16,8 @@ const DEPARTMENT_FIELDS = `
 `
 
 export const GET_DEPARTMENT = `
-  query GetDepartment($departmentId: ID!) {
-    getDepartment(departmentId: $departmentId) {
+  query GetDepartment($tenantId: ID!, $departmentId: ID!) {
+    getDepartment(tenantId: $tenantId, departmentId: $departmentId) {
       ${DEPARTMENT_FIELDS}
     }
   }

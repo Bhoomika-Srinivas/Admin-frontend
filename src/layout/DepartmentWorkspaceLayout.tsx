@@ -114,15 +114,15 @@ function WorkspaceTopBar({ dept, onMenuClick, sidebarOpen }: { dept: Department;
 // ── Workspace Layout ──────────────────────────────────────────────────────────
 
 export default function DepartmentWorkspaceLayout() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { deptId } = useParams<{ deptId: string }>()
   const [dept, setDept] = useState<Department | null | undefined>(undefined)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (!deptId) return
-    departmentService.getById(deptId).then(result => setDept(result ?? null))
-  }, [deptId])
+    departmentService.getById(deptId, user.tenantId ?? '').then(result => setDept(result ?? null))
+  }, [deptId, user.tenantId])
 
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (dept === null) return <Navigate to="/departments" replace />
