@@ -5,9 +5,19 @@ import {
   type CognitoUserSession,
 } from 'amazon-cognito-identity-js'
 
+const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID
+const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID
+
+if (!USER_POOL_ID || !CLIENT_ID) {
+  throw new Error(
+    'Cognito configuration missing. ' +
+    'Please set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID in your .env file'
+  )
+}
+
 const userPool = new CognitoUserPool({
-  UserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID as string,
-  ClientId: import.meta.env.VITE_COGNITO_CLIENT_ID as string,
+  UserPoolId: USER_POOL_ID,
+  ClientId: CLIENT_ID,
 })
 
 export function signIn(email: string, password: string): Promise<CognitoUserSession> {

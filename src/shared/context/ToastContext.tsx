@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
@@ -50,6 +50,14 @@ const toastConfig: Record<
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
+  const timeoutsRef = useRef<number[]>([])
+
+  // Clear timeouts on unmount
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach(id => clearTimeout(id))
+    }
+  }, [])
 
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id))
@@ -59,9 +67,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (type: ToastType, message: string) => {
       const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
       setToasts(prev => [...prev, { id, type, message }])
-      setTimeout(() => removeToast(id), 3500)
+
+      const timeoutId = window.setTimeout(() => {
+        removeToast(id)
+      }, 3500)
+
+      timeoutsRef.current.push(timeoutId)
     },
-    [removeToast],
+    [removeToast]
   )
 
   const contextValue: ToastContextValue = {

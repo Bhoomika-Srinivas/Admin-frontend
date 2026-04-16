@@ -24,7 +24,7 @@ export default function StatCard({ title, value, icon: Icon, change, changeLabel
   const isPositive = (change ?? 0) >= 0
 
   return (
-    <div className="card p-5 flex gap-4 items-start hover:shadow-card-hover transition-shadow">
+    <div className="card p-5 flex gap-4 items-start hover:shadow-card-hover transition-shadow h-full">
       <div className={clsx('w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0', colorMap[color])}>
         <Icon size={20} />
       </div>

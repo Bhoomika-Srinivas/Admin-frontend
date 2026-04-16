@@ -92,7 +92,7 @@ export default function DashboardPage() {
           <div
             key={s.title}
             onClick={() => navigate(s.path)}
-            className="cursor-pointer rounded-xl transition-transform hover:-translate-y-0.5 hover:shadow-md"
+            className="cursor-pointer rounded-xl transition-transform hover:-translate-y-0.5 hover:shadow-md h-full"
           >
             <StatCard
               title={s.title}
