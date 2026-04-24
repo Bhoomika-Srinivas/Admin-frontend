@@ -7,11 +7,12 @@ import type {
   ExecutiveCommitteeMember,
   DeanMessage,
   AlumniCoordinator,
-  DistinguishedAlumniEntry,
+  DistinguishedAlumnus,
   AlumniRegistration,
   AlumniContact,
 } from '@/shared/types/models'
 import { alumniService } from '@/app-modules/alumni/api/alumniApi'
+import { deptAboutService } from '@/app-modules/departments/api/deptAboutApi'
 
 interface AlumniFilter {
   search?: string
@@ -207,14 +208,8 @@ export function useCoordinators(filter?: CoordinatorsFilter) {
 
 // ─── Distinguished Alumni ──────────────────────────────────────────────────────
 
-interface DistinguishedFilter {
-  department?: string
-  featured?: boolean
-  search?: string
-}
-
-export function useDistinguishedAlumni(filter?: DistinguishedFilter) {
-  const [alumni, setAlumni] = useState<DistinguishedAlumniEntry[]>([])
+export function useDistinguishedAlumni() {
+  const [alumni, setAlumni] = useState<DistinguishedAlumnus[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -222,7 +217,7 @@ export function useDistinguishedAlumni(filter?: DistinguishedFilter) {
     setLoading(true)
     setError(null)
     try {
-      const data = await alumniService.getDistinguished(filter)
+      const data = await deptAboutService.getAlumni('')
       setAlumni(data)
     } catch {
       setError('Failed to load distinguished alumni')
@@ -231,7 +226,7 @@ export function useDistinguishedAlumni(filter?: DistinguishedFilter) {
     }
   }
 
-  useEffect(() => { load() }, [filter?.department, filter?.featured, filter?.search])
+  useEffect(() => { load() }, [])
 
   return { alumni, loading, error, reload: load }
 }

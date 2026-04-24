@@ -186,29 +186,18 @@ export const LIST_COORDINATORS = `
 // ─── Distinguished Alumni ──────────────────────────────────────────────────────
 
 export const LIST_DISTINGUISHED_ALUMNI = `
-  query ListDistinguishedAlumni(
-    $department: String
-    $featured: Boolean
-    $search: String
-  ) {
-    listDistinguishedAlumni(
-      department: $department
-      featured: $featured
-      search: $search
-    ) {
+  query ListDistinguishedAlumni($deptId: ID!) {
+    listDistinguishedAlumni(deptId: $deptId) {
       items {
         distinguishedAlumnusId
+        deptId
         name
-        department
-        batchYear
+        batch
         currentRole
-        company
-        linkedinUrl
-        profileImage
-        isFeatured
-        isActive
+        organization
+        achievement
+        imageUrl
       }
-      nextToken
     }
   }
 `

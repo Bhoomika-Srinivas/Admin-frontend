@@ -33,7 +33,7 @@ interface BackendProgramOutcome {
 function mapDistinguishedAlumnus(raw: Record<string, unknown>): DistinguishedAlumnus {
   return {
     id:           raw.alumniId as string,
-    deptId:       raw.deptId as string,
+    deptId:       (raw.deptId ?? raw.department) as string,
     name:         (raw.name as string) ?? '',
     batch:        (raw.batch as string) ?? '',
     currentRole:  (raw.designation as string) ?? '',
@@ -216,7 +216,9 @@ export const deptAboutService = {
     const data = await gqlRequest<{ listAlumni: { items: Record<string, unknown>[] } }>(
       LIST_ALUMNI, { deptId }
     )
-    return (data.listAlumni?.items ?? []).map(mapDistinguishedAlumnus)
+    const items = data.listAlumni?.items ?? []
+    console.log('[deptAboutService.getAlumni] raw items sample:', items.slice(0, 3).map(r => ({ alumniId: r.alumniId, department: r.department, deptId: r.deptId })))
+    return items.map(mapDistinguishedAlumnus)
   },
 
   async createAlumnus(input: Omit<DistinguishedAlumnus, 'id'>): Promise<DistinguishedAlumnus> {

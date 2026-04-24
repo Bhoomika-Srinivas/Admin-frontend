@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { ShieldCheck } from 'lucide-react'
-import { auditService, type AuditLog } from '@/core-modules/audit/api/auditApi'
+import { useAuditLogs } from '@/core-modules/audit/hooks/useAudit'
+import type { AuditLog } from '@/core-modules/audit/api/auditApi'
 import SearchBar from '@/shared/components/filters/SearchBar'
 import SelectFilter from '@/shared/components/filters/SelectFilter'
 import DataTable, { type Column } from '@/shared/components/tables/DataTable'
@@ -39,16 +40,15 @@ export default function AuditLogsPage() {
   const [page, setPage] = useState(1)
   const limit = 15
 
-  // Load fresh on each render — service is in-memory
-  const allLogs = auditService.getLogs()
+  const { logs, loading, error } = useAuditLogs()
 
-  const filtered = useMemo(() => allLogs.filter(log => {
+  const filtered = useMemo(() => logs.filter(log => {
     const q = search.toLowerCase()
     return (
       (!q || log.action.toLowerCase().includes(q) || log.userName.toLowerCase().includes(q) || (log.details ?? '').toLowerCase().includes(q)) &&
       (!moduleFilter || log.module === moduleFilter)
     )
-  }), [search, moduleFilter, allLogs.length])
+  }), [logs, search, moduleFilter])
 
   const paginated = filtered.slice((page - 1) * limit, page * limit)
 
@@ -118,9 +118,11 @@ export default function AuditLogsPage() {
             className="sm:w-40"
           />
         </div>
+        {error && <p className="px-4 py-3 text-sm text-red-600 bg-red-50 border-b border-red-100">{error}</p>}
         <DataTable
           columns={columns}
           data={paginated}
+          loading={loading}
           keyExtractor={r => r.id}
           total={filtered.length}
           page={page}

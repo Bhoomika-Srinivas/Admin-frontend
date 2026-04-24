@@ -66,10 +66,24 @@ import {
 import UsersPage from '@/core-modules/users/pages/UsersPage'
 import NotificationsPage from '@/core-modules/notifications/pages/NotificationsPage'
 import AuditLogsPage from '@/core-modules/audit/pages/AuditLogsPage'
+import {
+  SettingsLayout,
+  SystemSettingsPage,
+  PlatformSettingsPage,
+  UserRolePage,
+  CollegeManagementPage,
+  CollegeProfilePage,
+  FeatureFlagsPage,
+} from '@/core-modules/settings'
 import ProfilePage from '@/app-modules/profile/pages/ProfilePage'
 import LoginPage from '@/core-modules/auth/pages/LoginPage'
 import PlaceholderPage from '@/shared/components/common/PlaceholderPage'
 import AdmissionsPage from '@/app-modules/admissions/pages/AdmissionsPage'
+import ProgramsOfferedPage from '@/app-modules/academics/pages/ProgramsOfferedPage'
+import SchemeSyllabusPage from '@/app-modules/academics/pages/SchemeSyllabusPage'
+import AcademicCalendarPage from '@/app-modules/academics/pages/AcademicCalendarPage'
+import RulesRegulationsPage from '@/app-modules/academics/pages/RulesRegulationsPage'
+import RankHoldersPage from '@/app-modules/academics/pages/RankHoldersPage'
 import ProtectedRoute from '@/shared/components/common/ProtectedRoute'
 import AdminProgramsPage from '@/app-modules/departments/pages/academics/admin-courses/AdminProgramsPage'
 import AdminProgramDeptsPage from '@/app-modules/departments/pages/academics/admin-courses/AdminProgramDeptsPage'
@@ -195,6 +209,11 @@ export const router = createBrowserRouter([
         ),
       },
       // Academics
+      { path: 'academics/programs', element: <ProgramsOfferedPage /> },
+      { path: 'academics/scheme-syllabus', element: <SchemeSyllabusPage /> },
+      { path: 'academics/calendar', element: <AcademicCalendarPage /> },
+      { path: 'academics/rules', element: <RulesRegulationsPage /> },
+      { path: 'academics/ranks', element: <RankHoldersPage /> },
       // Course Catalog Admin (manage programs → depts → semesters → batches → courses)
       { path: 'academics/catalog',                                                        element: <AdminProgramsPage /> },
       { path: 'academics/catalog/:programId',                                             element: <AdminProgramDeptsPage /> },
@@ -285,9 +304,18 @@ export const router = createBrowserRouter([
         path: 'settings',
         element: (
           <ProtectedRoute permission="manage:all_departments">
-            <PlaceholderPage title="Settings" description="Configure system preferences and integrations." />
+            <SettingsLayout />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true,          element: <PlatformSettingsPage /> },
+          { path: 'profile',      element: <CollegeProfilePage /> },
+          { path: 'colleges',     element: <CollegeManagementPage /> },
+          { path: 'users',        element: <UserRolePage /> },
+          { path: 'auth',         element: <SystemSettingsPage /> },
+          { path: 'audit',        element: <AuditLogsPage /> },
+          { path: 'features',     element: <FeatureFlagsPage /> },
+        ],
       },
       { path: 'notifications', element: <NotificationsPage /> },
       {

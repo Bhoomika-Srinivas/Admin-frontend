@@ -1,8 +1,8 @@
-// TODO: Replace with real GraphQL mutations when backend is ready
-export const CREATE_AUDIT_LOGS = `
-  mutation CreateAUDIT LOGS($input: AUDIT LOGSInput!) {
-    createAUDIT LOGS(input: $input) {
-      id
+export const CREATE_AUDIT_ENTRY = `
+  mutation CreateAuditEntry($input: CreateAuditEntryInput!) {
+    createAuditEntry(input: $input) {
+      success
+      message
     }
   }
 `

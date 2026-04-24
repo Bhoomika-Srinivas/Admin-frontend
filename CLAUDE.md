@@ -12,7 +12,11 @@ npm run lint         # ESLint with zero max-warnings
 npm run preview      # Preview production build
 ```
 
-Copy `.env.example` to `.env` and set `VITE_API_BASE_URL` and `VITE_APPSYNC_URL` before starting.
+Copy `.env.example` to `.env` and fill in all four variables before starting:
+- `VITE_API_BASE_URL` — REST base URL (legacy Axios client)
+- `VITE_APPSYNC_URL` — AWS AppSync GraphQL endpoint
+- `VITE_COGNITO_USER_POOL_ID` — Cognito User Pool ID
+- `VITE_COGNITO_CLIENT_ID` — Cognito App Client ID
 
 ## Architecture
 
@@ -140,23 +144,40 @@ All shared TypeScript interfaces are in `src/shared/types/models.ts`. The shared
 
 ### Auth
 
-`apiClient` (`src/services/apiClient.ts`) reads `auth_token` from `localStorage` and attaches it as a Bearer token. A 401 response clears the token and redirects to `/login`. The new `graphqlClient` (`src/api/graphqlClient.ts`) does the same for GraphQL requests.
+Authentication uses **AWS Cognito** (`amazon-cognito-identity-js`). Tokens are held in memory — never `localStorage`.
+
+- `src/api/cognitoClient.ts` — `signIn`, `signOut`, `getCurrentSession`, `getCurrentToken`
+- `src/auth/AuthContext.tsx` — `AuthProvider` builds the `User` object entirely from the Cognito JWT claims on login and session restore. No backend call is made at login time. Claims used: `sub` (id), `name`, `email`, `custom:roles` (JSON array), `custom:permissions` (JSON array, injected by pre-token-gen Lambda), `custom:tenant_id`, `custom:department`.
+- `src/api/graphqlClient.ts` — calls `getCurrentToken()` and attaches it as `Authorization` header on every AppSync request. A 401 redirects to `/login`. Also sends `X-CSRF-Token`.
+- `src/services/apiClient.ts` — legacy Axios REST client. Same token attach + 401 redirect pattern. Only used by modules not yet migrated to GraphQL.
+
+`useAuth()` returns `{ user, isAuthenticated, login, logout, updateProfile }`.
 
 ### Role-Based Access Control
 
-Two application roles: `super_admin` and `dept_admin`.
+Two application roles: `super_admin` (full access) and `dept_admin` (own department only). Backend may send `dept-admin` (hyphen) — mapped to `dept_admin` in `AuthContext`.
 
-**Permission layer** (`src/shared/utils/permissions.ts`): Defines `Permission` tokens and a `ROLE_PERMISSIONS` map. Use `can(user, permission)` for boolean checks, `canManageDepartment(user, shortName)` for per-department checks.
+**IMPORTANT — two separate permission layers, do not confuse them:**
 
-**Auth context** (`src/auth/AuthContext.tsx`): `AuthProvider` holds the active `User` in state. `useAuth()` returns `{ user, switchUser }`. Wraps `RouterProvider` in `App.tsx`.
+**Layer 1 — Frontend sidebar/route gating** (`src/shared/utils/permissions.ts`):
+- Static `ROLE_PERMISSIONS` map keyed by `user.role` → `Permission[]`
+- Tokens: `manage:users`, `manage:all_departments`, `manage:own_department`, `manage:alumni`, `manage:committees`, `manage:placements`, `content:create`, `content:edit`, `content:delete`, `events:approve`
+- `can(user, permission)` checks this map. It does **NOT** read `user.permissions`.
+- Changing backend roles/permissions does not affect sidebar visibility without also updating this map.
 
-**Route guards** (`src/shared/components/common/ProtectedRoute.tsx`): Redirects to `/` if the user lacks the required permission. Applied in `router/router.tsx`.
+**Layer 2 — Backend JWT claims** (`custom:permissions` in the Cognito token):
+- Injected by the pre-token-generation Lambda into every token
+- Stored in `user.permissions: string[]` (e.g. `"alumni:read:all"`, `"events:create:dept"`)
+- Format: `module:action:scope`
+- Used by backend AppSync resolvers for fine-grained authorization. The frontend sidebar and `ProtectedRoute` do **NOT** read this array — they only use Layer 1.
+
+**Route guards** (`src/shared/components/common/ProtectedRoute.tsx`): Redirects to `/` if `can(user, permission)` returns false. Applied in `router/router.tsx`.
 
 **UI-level enforcement**:
 - `DepartmentsPage` / `FacultyListPage`: data pre-filtered to `user.department` for `dept_admin`
 - `EventsPage`: Approve/Reject shown only when `can(user, 'events:approve')`
 - `Sidebar`: items with a `permission` field filtered at render time using `can()`
-- `Navbar`: shows user name, role badge, and a "Switch Demo User" dropdown
+- `Navbar`: shows user name and role badge
 
 ### Service Layer (In-Memory)
 
@@ -175,7 +196,7 @@ Modules use in-memory service singletons seeded from `src/data/mockData.ts`. Eac
 | `app-modules/placements/api/placementsApi.ts` | `placementService` | Standard CRUD + audit |
 | `core-modules/users/api/usersApi.ts` | `userService` | Standard CRUD + audit |
 
-To connect to a real backend, replace the in-memory implementations with `gqlRequest` calls from `src/api/graphqlClient.ts`.
+Modules already migrated to `gqlRequest`: `users`, `audit`, `settings` (roles + system settings). Remaining in-memory modules: `events`, `news`, `notifications`, `faculty`, `departments`, `alumni`, `committees`, `placements`. To migrate a module, replace its in-memory service with `gqlRequest` calls and add GraphQL query/mutation strings in its `graphql/` folder.
 
 ### Contexts
 
@@ -193,7 +214,25 @@ Defined in `src/router/router.tsx`. Routes map to module page components importe
 
 ### Routes Not Yet Implemented
 
-Placeholder routes: Gallery, Results, Admissions (Applications & Students), Campus Life (Clubs, Sports), Facilities (Labs, Library, Hostel), Settings. Implement by adding a page inside `src/app-modules/<name>/pages/` and registering it in `src/router/router.tsx`.
+Placeholder routes still showing `<PlaceholderPage>`: Gallery, Results, Campus Life (Clubs, Sports), Facilities (Labs, Library, Hostel), Announcements, ERP. Implement by adding a page inside the relevant `src/app-modules/<name>/pages/` folder and registering it in `src/router/router.tsx`.
+
+### Vite Dev Server — CSP Warning
+
+Do **NOT** add a `Content-Security-Policy` header under `server.headers` in `vite.config.ts`. It blocks the inline `<script type="module">` that `@vitejs/plugin-react` injects for React Fast Refresh, causing every component to throw `"@vitejs/plugin-react can't detect preamble"` at runtime. The CSP in `index.html`'s `<meta http-equiv="Content-Security-Policy">` tag is the correct place for dev-time CSP.
+
+### File Uploads
+
+`src/shared/utils/uploadToS3.ts` (also re-exported as `s3Upload.ts`) — correct calling convention:
+
+```ts
+// Returns Promise<string> (the public URL) — throws on validation failure
+uploadToS3(file: File, path?: string, id?: string): Promise<string>
+
+// Example usage (3 args is correct):
+const url = await uploadToS3(file, 'dept-academics', deptId)
+```
+
+Do not use the old 2-arg `(file, options: UploadOptions)` signature — callers across the codebase all use the 3-arg form.
 
 ## UI Specifications
 

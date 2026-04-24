@@ -97,13 +97,11 @@ export type CoordinatorFormData = z.infer<typeof CoordinatorSchema>
 
 export const DistinguishedAlumniSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  department: z.string().min(1, 'Department is required'),
-  batchYear: z.number().min(1950).max(new Date().getFullYear(), 'Invalid batch year'),
+  batch: z.string().min(1, 'Batch is required'),
   currentRole: z.string().min(1, 'Current role is required'),
-  company: z.string().min(1, 'Company is required'),
-  linkedinUrl: z.string().url('Valid LinkedIn URL required').optional(),
-  isFeatured: z.boolean().default(false),
-  isActive: z.boolean().default(true),
+  organization: z.string().min(1, 'Organization is required'),
+  achievement: z.string().optional(),
+  imageUrl: z.string().optional(),
 })
 
 export type DistinguishedAlumniFormData = z.infer<typeof DistinguishedAlumniSchema>

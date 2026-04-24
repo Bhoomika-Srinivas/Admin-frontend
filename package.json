@@ -11,7 +11,9 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@tanstack/react-virtual": "^3.13.24",
     "amazon-cognito-identity-js": "^6.3.16",
+    "aws-amplify": "^6.16.4",
     "axios": "^1.6.7",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
