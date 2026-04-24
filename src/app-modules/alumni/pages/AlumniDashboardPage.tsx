@@ -2,11 +2,10 @@ import { useMemo } from 'react'
 import {
   Calendar,
   Users,
-  Star,
   Clock,
-  CheckCircle,
+  Star,
 } from 'lucide-react'
-import { useAlumniEvents, useCommittee, useDistinguishedAlumni, useCoordinators } from '../hooks/useAlumni'
+import { useAlumniEvents, useCommittee, useCoordinators } from '../hooks/useAlumni'
 import { Link } from 'react-router-dom'
 
 interface StatCardProps {
@@ -44,7 +43,6 @@ function StatCard({ title, value, icon: Icon, color, to }: StatCardProps) {
 export default function AlumniDashboardPage() {
   const { events, loading: eventsLoading } = useAlumniEvents()
   const { members, loading: committeeLoading } = useCommittee()
-  const { alumni, loading: distinguishedLoading } = useDistinguishedAlumni()
   const { coordinators, loading: coordinatorsLoading } = useCoordinators()
 
   const stats = useMemo(() => {
@@ -53,19 +51,15 @@ export default function AlumniDashboardPage() {
       return eventDate >= new Date() && e.status === 'published'
     }).length
 
-    const featuredAlumni = alumni.filter(a => a.isFeatured).length
-
     return [
       { title: 'Total Events', value: events.length, icon: Calendar, color: 'blue' as const, to: '/alumni/events' },
       { title: 'Upcoming Events', value: upcomingEvents, icon: Clock, color: 'amber' as const, to: '/alumni/events' },
       { title: 'Committee Members', value: members.length, icon: Users, color: 'purple' as const, to: '/alumni/committee' },
-      { title: 'Distinguished Alumni', value: alumni.length, icon: Star, color: 'amber' as const, to: '/alumni/distinguished' },
-      { title: 'Featured Alumni', value: featuredAlumni, icon: CheckCircle, color: 'green' as const, to: '/alumni/distinguished' },
       { title: 'Coordinators', value: coordinators.length, icon: Users, color: 'rose' as const, to: '/alumni/coordinators' },
     ]
-  }, [events, members, alumni, coordinators])
+  }, [events, members, coordinators])
 
-  const loading = eventsLoading || committeeLoading || distinguishedLoading || coordinatorsLoading
+  const loading = eventsLoading || committeeLoading || coordinatorsLoading
 
   if (loading) {
     return (

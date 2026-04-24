@@ -11,7 +11,7 @@ export function useUsers() {
     setLoading(true)
     setError(null)
     try {
-      const data = userService.getAll()
+      const data = await userService.getAll()
       setUsers(data)
     } catch {
       setError('Failed to load users')

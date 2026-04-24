@@ -1,0 +1,5 @@
+export { default as AcademicCalendarPage } from './pages/AcademicCalendarPage'
+export { default as RulesRegulationsPage } from './pages/RulesRegulationsPage'
+export { default as RankHoldersPage } from './pages/RankHoldersPage'
+export { default as ProgramsOfferedPage } from './pages/ProgramsOfferedPage'
+export { default as SchemeSyllabusPage } from './pages/SchemeSyllabusPage'

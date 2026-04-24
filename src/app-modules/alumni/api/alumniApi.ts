@@ -297,27 +297,43 @@ export const alumniService = {
 
   // ─── Distinguished Alumni ──────────────────────────────────────────────────────
 
-  async getDistinguished(params?: {
-    department?: string
-    featured?: boolean
-    search?: string
-  }): Promise<DistinguishedAlumniEntry[]> {
+  async getDistinguished(deptId: string): Promise<DistinguishedAlumniEntry[]> {
     const data = await gqlRequest<{ listDistinguishedAlumni: { items: Record<string, unknown>[] } }>(
-      LIST_DISTINGUISHED_ALUMNI, params
+      LIST_DISTINGUISHED_ALUMNI, { deptId }
     )
     return (data.listDistinguishedAlumni?.items ?? []).map(mapDistinguishedAlumnus)
   },
 
   async createDistinguishedAlumnus(input: Record<string, unknown>): Promise<DistinguishedAlumniEntry> {
     const data = await gqlRequest<{ createDistinguishedAlumnus: Record<string, unknown> }>(
-      CREATE_DISTINGUISHED_ALUMNUS, { input }
+      CREATE_DISTINGUISHED_ALUMNUS, {
+        input: {
+          deptId:       input.deptId,
+          name:         input.name,
+          batch:        input.batch,
+          currentRole:  input.currentRole,
+          organization: input.organization,
+          achievement:  input.achievement,
+          imageUrl:     input.imageUrl || undefined,
+        },
+      }
     )
     return mapDistinguishedAlumnus(data.createDistinguishedAlumnus)
   },
 
   async updateDistinguishedAlumnus(distinguishedAlumnusId: string, input: Record<string, unknown>): Promise<DistinguishedAlumniEntry> {
     const data = await gqlRequest<{ updateDistinguishedAlumnus: Record<string, unknown> }>(
-      UPDATE_DISTINGUISHED_ALUMNUS, { input: { distinguishedAlumnusId, ...input } }
+      UPDATE_DISTINGUISHED_ALUMNUS, {
+        input: {
+          distinguishedAlumnusId,
+          name:         input.name,
+          batch:        input.batch,
+          currentRole:  input.currentRole,
+          organization: input.organization,
+          achievement:  input.achievement,
+          imageUrl:     input.imageUrl || undefined,
+        },
+      }
     )
     return mapDistinguishedAlumnus(data.updateDistinguishedAlumnus)
   },
@@ -453,16 +469,14 @@ function mapCoordinator(raw: Record<string, unknown>): AlumniCoordinator {
 
 function mapDistinguishedAlumnus(raw: Record<string, unknown>): DistinguishedAlumniEntry {
   return {
-    id: (raw.distinguishedAlumnusId as string) ?? '',
-    name: (raw.name as string) ?? '',
-    department: (raw.department as string) ?? '',
-    batchYear: (raw.batchYear as number) ?? 0,
-    currentRole: (raw.currentRole as string) ?? '',
-    company: (raw.company as string) ?? '',
-    linkedinUrl: raw.linkedinUrl as string | undefined,
-    profileImage: raw.profileImage as string | undefined,
-    isFeatured: (raw.isFeatured as boolean) ?? false,
-    isActive: (raw.isActive as boolean) ?? true,
+    id:           (raw.distinguishedAlumnusId as string) ?? '',
+    deptId:       (raw.deptId as string) ?? '',
+    name:         (raw.name as string) ?? '',
+    batch:        (raw.batch as string) ?? '',
+    currentRole:  (raw.currentRole as string) ?? '',
+    organization: (raw.organization as string) ?? '',
+    achievement:  (raw.achievement as string) ?? '',
+    imageUrl:     raw.imageUrl as string | undefined,
   }
 }
 

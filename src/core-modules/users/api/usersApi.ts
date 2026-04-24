@@ -1,45 +1,93 @@
-import type { User } from '@/shared/types/models'
-import { mockUsers } from '@/data/mockData'
-import { auditService } from '@/core-modules/audit/api/auditApi'
+import { gqlRequest } from '@/api/graphqlClient'
+import type { User, UserStatus } from '@/shared/types/models'
+import { LIST_USERS } from '../graphql/users.query'
+import { INVITE_USER, UPDATE_USER, RESET_USER_PASSWORD } from '../graphql/users.mutation'
 
-const users: User[] = [...mockUsers]
-let nextId = 100
+interface GqlUser {
+  user_id: string
+  email: string
+  name: string
+  phone?: string
+  status: UserStatus
+  role: string
+  department?: string
+  created_at?: string
+}
+
+const ROLE_MAP: Record<string, User['role']> = {
+  super_admin:    'super_admin',
+  college_admin:  'college_admin',
+  dept_admin:     'dept_admin',
+  'dept-admin':   'dept_admin',
+  'Dept Admin':   'dept_admin',
+  'Super Admin':  'super_admin',
+  admin:          'super_admin',
+  editor:         'editor',
+  viewer:         'viewer',
+}
+
+function mapUser(raw: GqlUser): User {
+  return {
+    id:         raw.user_id,
+    name:       raw.name ?? raw.email.split('@')[0],
+    email:      raw.email,
+    phone:      raw.phone,
+    role:       ROLE_MAP[raw.role] ?? (raw.role as User['role']),
+    department: raw.department,
+    status:     raw.status ?? 'active',
+    createdAt:  raw.created_at ?? '',
+  }
+}
 
 export const userService = {
-  getAll(): User[] {
-    return [...users]
+  async getAll(): Promise<User[]> {
+    const data = await gqlRequest<{ listUsers: { items: GqlUser[] } }>(LIST_USERS)
+    return (data.listUsers?.items ?? []).map(mapUser)
   },
 
-  getById(id: string): User | undefined {
-    return users.find(u => u.id === id)
+  async invite(input: {
+    name: string
+    email: string
+    phone?: string
+    password: string
+    role: string
+    department?: string
+  }): Promise<void> {
+    await gqlRequest(INVITE_USER, { input })
   },
 
-  create(data: Omit<User, 'id' | 'createdAt'>, actor: User): User {
-    const newUser: User = {
-      ...data,
-      id: String(++nextId),
-      createdAt: new Date().toISOString(),
-    }
-    users.push(newUser)
-    auditService.log(actor.id, actor.name, 'User Created', 'Users', `"${newUser.name}"`)
-    return newUser
+  async update(
+    userId: string,
+    input: { name?: string; role?: string; department?: string; status?: UserStatus },
+  ): Promise<void> {
+    await gqlRequest(UPDATE_USER, { user_id: userId, input })
   },
 
-  update(id: string, data: Partial<User>, actor: User): User | null {
-    const index = users.findIndex(u => u.id === id)
-    if (index === -1) return null
-
-    const updated: User = { ...users[index], ...data }
-    users[index] = updated
-    auditService.log(actor.id, actor.name, 'User Updated', 'Users', `"${updated.name}"`)
-    return updated
+  async setStatus(userId: string, status: 'active' | 'deactivated'): Promise<void> {
+    await gqlRequest(UPDATE_USER, { user_id: userId, input: { status } })
   },
 
-  delete(id: string, actor: User): boolean {
-    const index = users.findIndex(u => u.id === id)
-    if (index === -1) return false
-    const [removed] = users.splice(index, 1)
-    auditService.log(actor.id, actor.name, 'User Deleted', 'Users', `"${removed.name}"`)
-    return true
+  async resetPassword(userId: string): Promise<void> {
+    await gqlRequest(RESET_USER_PASSWORD, { user_id: userId })
+  },
+
+  // Legacy — kept so existing callers compile; maps to setStatus(deactivated)
+  async delete(id: string): Promise<void> {
+    await userService.setStatus(id, 'deactivated')
+  },
+
+  // Legacy create wrapper — kept for backward compat during migration
+  async create(
+    data: Omit<User, 'id' | 'createdAt'> & { password?: string },
+  ): Promise<User> {
+    await userService.invite({
+      email:      data.email,
+      name:       data.name,
+      phone:      data.phone,
+      role:       data.role,
+      department: data.department,
+      password:   (data as Omit<User, 'id' | 'createdAt'> & { password?: string }).password ?? '',
+    })
+    return { ...data, id: '', createdAt: new Date().toISOString() }
   },
 }

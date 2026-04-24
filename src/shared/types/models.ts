@@ -2,6 +2,48 @@
 
 export type Status = 'active' | 'inactive' | 'draft' | 'published' | 'archived'
 
+// ─── College ──────────────────────────────────────────────────────────────────
+
+export interface College {
+  id: string
+  name: string
+  shortCode: string
+  adminEmail: string
+  status: 'active' | 'inactive'
+  createdAt: string
+  updatedAt?: string
+}
+
+// ─── College Profile ──────────────────────────────────────────────────────────
+
+export interface CollegeProfile {
+  tenant_id: string
+  logo_url?: string
+  name?: string
+  shortName?: string
+  established?: number
+  affiliatedUniversity?: string
+  collegeType?: string
+  address?: string
+  city?: string
+  state?: string
+  pincode?: string
+  phone?: string
+  email?: string
+  website?: string
+}
+
+// ─── Feature Flags ────────────────────────────────────────────────────────────
+
+export type FeatureName = 'events' | 'news' | 'announcements' | 'placements' | 'alumni'
+
+export interface FeatureFlag {
+  collegeId: string
+  feature: FeatureName
+  enabled: boolean
+  updatedAt?: string
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   total: number
@@ -18,7 +60,9 @@ export interface ApiResponse<T> {
 
 // ─── User ─────────────────────────────────────────────────────────────────────
 
-export type UserRole = 'super_admin' | 'dept_admin' | 'admin' | 'editor' | 'viewer'
+export type UserRole = 'super_admin' | 'college_admin' | 'dept_admin' | 'admin' | 'editor' | 'viewer'
+
+export type UserStatus = 'active' | 'inactive' | 'deactivated' | 'suspended' | 'invited'
 
 export interface User {
   id: string
@@ -27,10 +71,12 @@ export interface User {
   role: UserRole
   tenantId?: string
   department?: string
+  phone?: string
   avatar?: string
-  status: 'active' | 'inactive'
+  status: UserStatus
   lastLogin?: string
   createdAt: string
+  permissions?: string[]
 }
 
 // ─── Department ───────────────────────────────────────────────────────────────
@@ -283,15 +329,13 @@ export interface AlumniCoordinator {
 
 export interface DistinguishedAlumniEntry {
   id: string
+  deptId: string
   name: string
-  department: string
-  batchYear: number
+  batch: string
   currentRole: string
-  company: string
-  linkedinUrl?: string
-  profileImage?: string
-  isFeatured: boolean
-  isActive: boolean
+  organization: string
+  achievement: string
+  imageUrl?: string
 }
 
 export interface AlumniRegistration {
@@ -961,6 +1005,67 @@ export interface InfoBlock {
   id:          string
   type:        'Phone' | 'Office Hours' | 'Email'
   description: string
+}
+
+// ─── Academic Calendar ────────────────────────────────────────────────────────
+
+export type AcademicCalendarType = 'CURRENT' | 'HISTORIC'
+export type AcademicCalendarAuthority = 'INSTITUTE' | 'VTU'
+export type AcademicCalendarProgram = 'UG' | 'PG'
+
+export interface AcademicCalendar {
+  calendarId: string
+  title: string
+  description?: string
+  type: AcademicCalendarType
+  authority: AcademicCalendarAuthority
+  program: AcademicCalendarProgram
+  semester: string    // "I", "II", "I-III", "VI", etc.
+  year: string        // "2025-26"
+  date: string        // ISO date
+  fileUrl: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+// ─── Rules & Regulations ─────────────────────────────────────────────────────
+
+export interface RulesRegulations {
+  documentId: string           // always "singleton"
+  serviceRulesFile?: string    // S3 PDF/TXT URL
+  serviceRulesText?: string    // inline text
+  attendanceFile?: string      // S3 PDF/TXT URL
+  attendance?: string          // inline text
+  disciplineFile?: string      // S3 PDF/TXT URL
+  discipline?: string          // inline text
+  updatedAt?: string
+}
+
+// ─── Rank Holders ─────────────────────────────────────────────────────────────
+
+export interface RankHolder {
+  rankId: string
+  year: string                // "2024-25"
+  program: AcademicCalendarProgram
+  usn: string
+  studentName: string
+  branch: string
+  rank: string                // "1", "I", "Gold Medal", etc.
+  rankOrder: number           // numeric sort key
+  createdAt?: string
+}
+
+// ─── Scheme & Syllabus ────────────────────────────────────────────────────────
+
+export interface SchemeSyllabusEntry {
+  syllabusId: string
+  year: string        // e.g. "2025", "2024"
+  category: string    // e.g. "UG Scheme and Syllabus I-II-Sem - 2025" (empty = standalone)
+  title: string       // e.g. "Computer Science & Engineering Stream"
+  subtitle?: string   // e.g. "(CSE, ISE, AIML, CSDS, CS&D, CSBS, BT)"
+  fileUrl: string     // PDF or document URL
+  order: number
+  createdAt?: string
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────

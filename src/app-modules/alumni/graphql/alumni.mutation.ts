@@ -243,15 +243,13 @@ export const CREATE_DISTINGUISHED_ALUMNUS = `
   mutation CreateDistinguishedAlumnus($input: CreateDistinguishedAlumnusInput!) {
     createDistinguishedAlumnus(input: $input) {
       distinguishedAlumnusId
+      deptId
       name
-      department
-      batchYear
+      batch
       currentRole
-      company
-      linkedinUrl
-      profileImage
-      isFeatured
-      isActive
+      organization
+      achievement
+      imageUrl
     }
   }
 `
@@ -260,15 +258,13 @@ export const UPDATE_DISTINGUISHED_ALUMNUS = `
   mutation UpdateDistinguishedAlumnus($input: UpdateDistinguishedAlumnusInput!) {
     updateDistinguishedAlumnus(input: $input) {
       distinguishedAlumnusId
+      deptId
       name
-      department
-      batchYear
+      batch
       currentRole
-      company
-      linkedinUrl
-      profileImage
-      isFeatured
-      isActive
+      organization
+      achievement
+      imageUrl
     }
   }
 `

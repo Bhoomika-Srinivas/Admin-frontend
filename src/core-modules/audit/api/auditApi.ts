@@ -1,3 +1,7 @@
+import { gqlRequest } from '@/api/graphqlClient'
+import { LIST_AUDIT_ENTRIES } from '../graphql/audit.query'
+import { CREATE_AUDIT_ENTRY } from '../graphql/audit.mutation'
+
 export interface AuditLog {
   id: string
   userId: string
@@ -6,89 +10,75 @@ export interface AuditLog {
   module: string
   details?: string
   timestamp: string
+  ipAddress?: string
+  severity?: 'info' | 'warn' | 'critical'
+  resourceType?: string
+  resourceId?: string
 }
 
-const logs: AuditLog[] = [
-  {
-    id: '1',
-    userId: '1',
-    userName: 'Dr. Rajesh Kumar',
-    action: 'Event Approved',
-    module: 'Events',
-    details: '"Synergy 2024 - Annual Technical Fest"',
-    timestamp: '2024-03-09T10:15:00Z',
-  },
-  {
-    id: '2',
-    userId: '2',
-    userName: 'Prof. Anita Sharma',
-    action: 'Department Updated',
-    module: 'Departments',
-    details: 'Computer Science & Engineering',
-    timestamp: '2024-03-09T09:45:00Z',
-  },
-  {
-    id: '3',
-    userId: '2',
-    userName: 'Prof. Anita Sharma',
-    action: 'Faculty Added',
-    module: 'Faculty',
-    details: '"Dr. Anitha Rao"',
-    timestamp: '2024-03-08T16:30:00Z',
-  },
-  {
-    id: '4',
-    userId: '1',
-    userName: 'Dr. Rajesh Kumar',
-    action: 'User Created',
-    module: 'Users',
-    details: '"Prof. Anita Sharma"',
-    timestamp: '2024-03-07T11:00:00Z',
-  },
-  {
-    id: '5',
-    userId: '1',
-    userName: 'Dr. Rajesh Kumar',
-    action: 'News Published',
-    module: 'News',
-    details: '"BIET Ranked Among Top Engineering Colleges in Karnataka"',
-    timestamp: '2024-03-07T08:20:00Z',
-  },
-  {
-    id: '6',
-    userId: '2',
-    userName: 'Prof. Anita Sharma',
-    action: 'Event Created',
-    module: 'Events',
-    details: '"Industry Expert Workshop on Cloud Computing"',
-    timestamp: '2024-03-06T14:55:00Z',
-  },
-]
+interface GqlAuditEntry {
+  entry_id: string
+  actor_id: string
+  actor_email: string
+  action: string
+  resource_type: string
+  resource_id?: string
+  after?: string        // AWSJSON — stringified object
+  metadata?: string     // AWSJSON — stringified object
+  timestamp: string
+}
 
-let nextId = 200
+function mapAuditLog(raw: GqlAuditEntry): AuditLog {
+  let details: string | undefined
+  let ipAddress: string | undefined
+  try {
+    const meta = raw.metadata ? JSON.parse(raw.metadata) : {}
+    ipAddress = meta.ip
+  } catch { /* ignore */ }
+  try {
+    const after = raw.after ? JSON.parse(raw.after) : {}
+    details = typeof after === 'object' ? JSON.stringify(after) : String(after)
+  } catch { /* ignore */ }
+
+  return {
+    id:           raw.entry_id,
+    userId:       raw.actor_id,
+    userName:     raw.actor_email,
+    action:       raw.action,
+    module:       raw.resource_type,
+    details,
+    timestamp:    raw.timestamp,
+    ipAddress,
+    resourceType: raw.resource_type,
+    resourceId:   raw.resource_id,
+  }
+}
 
 export const auditService = {
-  getLogs(): AuditLog[] {
-    return [...logs].reverse()
-  },
-
+  // Fire-and-forget: write an audit entry. Called by in-memory app-module services.
   log(
     userId: string,
     userName: string,
     action: string,
-    module: string,
+    resourceType: string,
     details?: string,
-  ): AuditLog {
-    const entry: AuditLog = {
-      id: String(++nextId),
-      userId,
-      userName,
-      action,
-      module,
-      details,
-      timestamp: new Date().toISOString(),
-    }
-    logs.push(entry)
-    return entry
+  ): void {
+    gqlRequest(CREATE_AUDIT_ENTRY, {
+      input: { actor_id: userId, actor_email: userName, action, resource_type: resourceType, after: details ? JSON.stringify({ details }) : null },
+    }).catch(() => { /* best-effort */ })
+  },
+
+  async getLogs(params?: {
+    userId?: string
+    action?: string
+    from?: string
+    to?: string
+  }): Promise<AuditLog[]> {
+    const filter = params && Object.keys(params).length > 0 ? params : undefined
+    const data = await gqlRequest<{ listAuditEntries: { items: GqlAuditEntry[] } }>(
+      LIST_AUDIT_ENTRIES,
+      { filter },
+    )
+    return (data.listAuditEntries?.items ?? []).map(mapAuditLog)
   },
 }
